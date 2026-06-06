@@ -399,38 +399,47 @@ def background(name, index, mood):
         y = random.randrange(40, 420)
         draw_star(d, x, y, random.randrange(3, 8), rgba(PALETTE["cream"], random.randrange(90, 180)))
     if index == 1:
-        for x in range(-80, 1100, 120):
-            trunk = rgba("#39252f")
-            d.rectangle((x + 45, 470, x + 70, 900), fill=trunk)
-            for dx, dy, c in [(-20, 400, "autumn_orange"), (32, 365, "dusty_pink"), (65, 415, "lavender")]:
-                ellipse(d, (x + dx, dy, x + dx + 125, dy + 125), rgba(PALETTE[c], 230))
-        d.rectangle((0, 825, 1024, 1024), fill=rgba("#3c2235"))
+        d.rectangle((0, 760, 1024, 1024), fill=rgba("#261927"))
+        for x in range(40, 980, 145):
+            rr(d, (x, 610, x + 88, 815), rgba("#44334a"), rgba(PALETTE["lavender"], 130), 4, 32)
+            draw_star(d, x + 44, 670, 18, rgba(PALETTE["dusty_pink"], 180))
+        for x in [105, 785]:
+            d.rectangle((x, 385, x + 26, 760), fill=rgba("#17131d"))
+            ellipse(d, (x - 28, 350, x + 54, 425), rgba(PALETTE["autumn_orange"], 220), rgba(PALETTE["deep_purple"]), 3)
+        for x in range(60, 900, 190):
+            polygon(d, [(x, 760), (x + 45, 690), (x + 92, 760)], rgba(PALETTE["soft_black"]), rgba(PALETTE["plum"]))
+            ellipse(d, (x + 18, 690, x + 72, 746), rgba("#0f0c15"), rgba(PALETTE["lavender"]), 2)
     elif index == 2:
-        d.rectangle((0, 700, 1024, 1024), fill=rgba("#201521"))
-        for x in range(50, 980, 180):
-            d.rectangle((x, 360, x + 90, 700), fill=rgba("#34243f"))
-            for wy in range(390, 650, 58):
-                rr(d, (x + 18, wy, x + 70, wy + 28), rgba(PALETTE["moon"], 160), None, 1, 5)
-            d.line((x + 45, 700, x + 45, 560), fill=rgba(PALETTE["soft_black"]), width=7)
-            ellipse(d, (x + 23, 535, x + 67, 580), rgba(PALETTE["autumn_orange"], 210))
-    elif index == 3:
-        rr(d, (120, 260, 904, 830), rgba("#3b263f"), rgba(PALETTE["lavender"], 180), 5, 25)
-        rr(d, (170, 335, 420, 760), rgba("#251729"), rgba(PALETTE["dusty_pink"]), 4, 14)
-        rr(d, (520, 335, 820, 760), rgba("#251729"), rgba(PALETTE["dusty_pink"]), 4, 14)
-        d.text((512, 285), "MOON & THREAD", anchor="mm", fill=rgba(PALETTE["moon"]), font=font(38, True))
-        d.rectangle((0, 820, 1024, 1024), fill=rgba("#251a2f"))
-    elif index == 4:
         d.rectangle((0, 735, 1024, 1024), fill=rgba("#2c1b28"))
-        for x in range(40, 960, 210):
+        for x in range(34, 965, 205):
             polygon(d, [(x, 520), (x + 95, 430), (x + 190, 520)], rgba(PALETTE["autumn_orange"]), rgba(PALETTE["deep_purple"]))
             rr(d, (x + 20, 520, x + 170, 760), rgba("#3a2440"), rgba(PALETTE["lavender"]), 4, 10)
             d.rectangle((x + 43, 607, x + 147, 625), fill=rgba(PALETTE["moon"]))
+            img.alpha_composite(item_icon("pumpkin", "", (90, 90)), (x + 72, 660))
+    elif index == 3:
+        for x in range(-80, 1100, 120):
+            trunk = rgba("#241829")
+            d.rectangle((x + 45, 430, x + 70, 900), fill=trunk)
+            for dx, dy, c in [(-20, 390, "plum"), (32, 355, "lavender"), (65, 405, "deep_purple")]:
+                ellipse(d, (x + dx, dy, x + dx + 125, dy + 125), rgba(PALETTE[c], 210))
+        for x in range(80, 920, 140):
+            ellipse(d, (x, 742, x + 75, 802), rgba(PALETTE["lavender"], 180), rgba(PALETTE["deep_purple"]), 3)
+        d.rectangle((0, 825, 1024, 1024), fill=rgba("#261927"))
+    elif index == 4:
+        rr(d, (120, 245, 904, 840), rgba("#251729"), rgba(PALETTE["lavender"], 160), 5, 25)
+        polygon(d, [(95, 255), (512, 82), (929, 255)], rgba("#17131d"), rgba(PALETTE["plum"]))
+        for x in [205, 430, 655]:
+            rr(d, (x, 355, x + 120, 610), rgba("#3b263f"), rgba(PALETTE["dusty_pink"]), 4, 16)
+            ellipse(d, (x + 34, 395, x + 86, 453), rgba(PALETTE["moon"], 190))
+        d.rectangle((0, 820, 1024, 1024), fill=rgba("#211521"))
     elif index == 5:
-        d.rectangle((0, 500, 1024, 1024), fill=rgba("#34243f"))
-        rr(d, (120, 205, 880, 800), rgba("#493051"), rgba(PALETTE["lavender"], 150), 4, 30)
-        rr(d, (210, 470, 520, 720), rgba("#2a1d2e"), rgba(PALETTE["dusty_pink"]), 4, 18)
-        rr(d, (590, 310, 775, 645), rgba("#2a1d2e"), rgba(PALETTE["moon"]), 4, 18)
-        ellipse(d, (675, 365, 735, 425), rgba(PALETTE["moon"]))
+        d.rectangle((0, 690, 1024, 1024), fill=rgba("#34243f"))
+        rr(d, (180, 345, 844, 735), rgba("#3b263f"), rgba(PALETTE["gold"], 180), 5, 20)
+        d.rectangle((225, 255, 800, 360), fill=rgba(PALETTE["autumn_orange"], 230))
+        for x in range(120, 900, 95):
+            polygon(d, [(x, 250), (x + 36, 305), (x + 72, 250)], rgba(PALETTE["lavender"]), rgba(PALETTE["deep_purple"]))
+        for x in range(55, 990, 82):
+            ellipse(d, (x, 760, x + 55, 815), rgba(PALETTE["plum"], 210), rgba(PALETTE["deep_purple"]), 2)
     add_noise(img, 1500, 8)
     d.text((40, 930), mood, fill=rgba(PALETTE["cream"], 190), font=font(30, True))
     return img
