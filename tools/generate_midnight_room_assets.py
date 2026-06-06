@@ -203,6 +203,10 @@ def draw_character(d, ox, oy, scale=1.0, pose="idle", side=False, expression="ha
         d.arc((x + 58 * s, y + 62 * s, x + 80 * s, y + 79 * s), 20, 160, fill=ink, width=max(2, int(2 * s)))
     ellipse(d, (x + 36 * s, y + 65 * s, x + 49 * s, y + 76 * s), blush)
     ellipse(d, (x + 86 * s, y + 65 * s, x + 99 * s, y + 76 * s), blush)
+    # Soft witch silhouette for the new Mara Midnight identity.
+    polygon(d, [(x + 36 * s, y + 19 * s), (x + 78 * s, y - 42 * s), (x + 98 * s, y + 22 * s)], rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]))
+    rr(d, (x + 28 * s, y + 20 * s, x + 106 * s, y + 34 * s), rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]), max(2, int(2 * s)), int(7 * s))
+    d.rectangle((x + 61 * s, y + 4 * s, x + 82 * s, y + 14 * s), fill=rgba(PALETTE["autumn_orange"]))
     draw_star(d, x + 101 * s, y + 23 * s, 8 * s, rgba(PALETTE["moon"]))
 
 
@@ -214,7 +218,7 @@ def character_assets():
     img = transparent((530, 768))
     d = ImageDraw.Draw(img)
     draw_character(d, 95, 108, 2.6, "idle")
-    d.text((42, 30), "Mara Noctua", fill=rgba(PALETTE["deep_purple"]), font=font(44, True))
+    d.text((42, 30), "Mara Midnight", fill=rgba(PALETTE["deep_purple"]), font=font(44, True))
     d.text((42, 84), "Midnight Room protagonist", fill=rgba(PALETTE["plum"]), font=font(24))
     save(img, IMAGES / "Hanna.png")
     save(img, MR / "Character" / "mara_front_concept.png")

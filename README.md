@@ -1,38 +1,37 @@
-estructura base charlotte y gabirel barrientos estructura visual y tematica neuva charlotte rodriguez
+# Midnight Room
 
-# Minijuego
+Videojuego indie 2D desarrollado en Unity. La base jugable conserva movimiento lateral, salto, doble salto, obstaculos, coleccionables, contador de tiempo, contador de intentos y finalizacion por nivel. La identidad visual fue renovada como una experiencia cozy, spooky cute y pastel goth sobre exploracion, coleccionismo y decoracion de una habitacion.
 
-Videojuego 2D desarrollado en Unity para el Taller de Desarrollo de Videojuegos. El proyecto presenta una experiencia de plataformas con escenarios progresivos, coleccionables, contador de tiempo, contador de intentos y sistema de finalizacion por nivel.
+## Capturas y mockups visuales
 
-## Capturas del videojuego
+Las siguientes imagenes muestran la nueva direccion visual aplicada al proyecto y a sus assets de portafolio.
 
-Las siguientes capturas fueron generadas a partir de las escenas y assets reales incluidos en el proyecto.
-
-| Menu principal | Nivel 1 |
+| Menu principal | Bosque de otono |
 | --- | --- |
-| ![Menu principal](docs/screenshots/menu-principal.png) | ![Nivel 1](docs/screenshots/nivel-1.png) |
+| ![Menu principal](docs/screenshots/menu-principal.png) | ![Bosque de otono](docs/screenshots/nivel-1.png) |
 
-| Desafio con obstaculos | Nivel avanzado |
+| Coleccion | Habitacion completada |
 | --- | --- |
-| ![Nivel 3](docs/screenshots/nivel-3.png) | ![Nivel 5](docs/screenshots/nivel-5.png) |
+| ![Coleccion](docs/screenshots/nivel-3.png) | ![Habitacion](docs/screenshots/nivel-5.png) |
 
 ## Descripcion
 
-Minijuego es una propuesta de plataformas 2D donde el jugador debe avanzar por distintos niveles, evitar peligros, recolectar diamantes y llegar al punto final de cada escena. La experiencia combina desplazamiento lateral, saltos, zonas de doble salto, enemigos, plataformas y una interfaz que registra el rendimiento durante la partida.
+Midnight Room es una propuesta de plataformas 2D donde Mara Noctua explora escenarios de otono para encontrar objetos especiales con los que decorar su habitacion. La experiencia combina desplazamiento lateral, saltos, zonas de doble salto, enemigos, plataformas y una interfaz que registra el rendimiento durante la partida.
 
-El juego incluye un menu principal, panel de creditos, menu de pausa y pantalla final de nivel con resumen de intentos, diamantes y tiempo.
+El juego incluye menu principal, panel de equipo, menu de pausa y pantalla final de nivel con resumen de intentos, hallazgos y tiempo.
 
 ## Caracteristicas principales
 
 - Movimiento horizontal y salto mediante fisicas 2D.
 - Sistema de doble salto en zonas especificas.
-- Recoleccion de diamantes.
+- Recoleccion de objetos decorativos.
 - Enemigos y zonas de muerte con reinicio del jugador.
 - Contador de tiempo por intento y tiempo acumulado.
 - Contador de intentos.
-- Pantalla de finalizacion de nivel.
-- Menu principal, creditos y menu de pausa.
+- Pantalla de finalizacion de nivel redisenada como actualizacion de habitacion.
+- Menu principal, equipo y menu de pausa.
 - Cinco escenas de nivel incluidas en la configuracion de build.
+- Paquete visual Midnight Room con personaje, fondos, tilesets, UI, coleccionables y progresion de habitacion.
 
 ## Controles
 
@@ -99,14 +98,31 @@ Assets/
 Packages/          Dependencias del proyecto Unity
 ProjectSettings/   Configuracion general del proyecto
 docs/screenshots/  Capturas usadas en este README
+docs/MIDNIGHT_ROOM_ART_BIBLE.md  Guia de arte y mapa de assets
 installer/         Script para generar el instalador de Windows
 tools/             Automatizacion de build
 ```
 
+## Direccion de arte
+
+La guia completa de estilo, mapeo de assets y notas de produccion esta en:
+
+```text
+docs/MIDNIGHT_ROOM_ART_BIBLE.md
+```
+
+Los assets nuevos estan en:
+
+```text
+Assets/Images/MidnightRoom/
+```
+
+Los sprites principales existentes tambien fueron reemplazados directamente para preservar referencias de Unity y evitar cambios de mecanicas.
+
 ## Creditos
 
 - Estructura base: Charlotte y Gabriel Barrientos.
-- Estructura visual y tematica nueva: Charlotte Rodriguez.
+- Direccion visual y tematica Midnight Room: Charlotte Rodriguez.
 - [Gabriel Barrientos](https://github.com/pinguin-frosch)
 - [Charlotte Rodriguez](https://github.com/Thekawaiicokie)
 
