@@ -96,7 +96,9 @@ def write_meta(path, folder=False):
 
 def save(img, path):
     path.parent.mkdir(parents=True, exist_ok=True)
-    img.save(path)
+    tmp = path.with_name(f".{path.stem}.{uuid.uuid4().hex}.tmp{path.suffix}")
+    img.save(tmp)
+    tmp.replace(path)
     write_meta(path)
 
 
@@ -397,15 +399,23 @@ def tile(fill, trim, pattern="leaves", size=(3464, 3464)):
     img = Image.new("RGBA", size, (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     w, h = size
-    rr(d, (130, 840, w - 130, h - 610), rgba(fill), rgba(PALETTE["deep_purple"]), 22, 70)
-    d.rectangle((130, 840, w - 130, 1130), fill=rgba(trim))
-    for x in range(220, w - 220, 280):
+    margin = max(24, int(w * 0.038))
+    top = max(60, int(h * 0.24))
+    bottom = max(top + 120, int(h * 0.82))
+    lip = min(bottom, top + max(42, int(h * 0.085)))
+    stroke = max(3, int(w * 0.006))
+    radius = max(14, int(w * 0.02))
+    rr(d, (margin, top, w - margin, bottom), rgba(fill), rgba(PALETTE["deep_purple"]), stroke, radius)
+    d.rectangle((margin, top, w - margin, lip), fill=rgba(trim))
+    step = max(92, int(w * 0.08))
+    motif = max(26, int(w * 0.018))
+    for x in range(margin + step // 2, w - margin - step // 2, step):
         if pattern == "leaves":
-            ellipse(d, (x, 900, x + 130, 990), rgba(PALETTE["autumn_orange"], 180), rgba(PALETTE["deep_purple"], 150), 6)
+            ellipse(d, (x, top + motif, x + motif * 2, top + motif * 2), rgba(PALETTE["autumn_orange"], 180), rgba(PALETTE["deep_purple"], 150), max(2, stroke // 2))
         elif pattern == "stars":
-            draw_star(d, x + 60, 950, 55, rgba(PALETTE["moon"], 190))
+            draw_star(d, x + motif, top + motif * 1.6, motif, rgba(PALETTE["moon"], 190))
         else:
-            rr(d, (x, 900, x + 120, 1010), rgba(PALETTE["lavender"], 170), None, 1, 28)
+            rr(d, (x, top + motif, x + motif * 2, top + motif * 2.4), rgba(PALETTE["lavender"], 170), None, 1, max(5, motif // 3))
     return img
 
 
