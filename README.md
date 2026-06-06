@@ -1,37 +1,119 @@
-# Midnight Room
+# Midnight Costume Quest
 
-Videojuego indie 2D desarrollado en Unity. La base jugable conserva movimiento lateral, salto, doble salto, obstaculos, coleccionables, contador de tiempo, contador de intentos y finalizacion por nivel. La identidad visual fue renovada como una experiencia cozy, spooky cute y pastel goth sobre exploracion, coleccionismo y decoracion de una habitacion.
+Videojuego 2D de plataformas desarrollado en Unity. La base jugable conserva movimiento lateral, salto, doble salto, obstaculos, coleccionables, cronometro, intentos y progresion de niveles.
 
-## Capturas y mockups visuales
+Este rediseño propone una nueva identidad visual y narrativa: Mara Midnight, una chica pastel goth, debe recuperar las piezas de su disfraz antes de la Competencia de Halloween.
 
-Las siguientes imagenes muestran la nueva direccion visual aplicada al proyecto y a sus assets de portafolio.
+## Estado de assets
 
-| Menu principal | Bosque de otono |
-| --- | --- |
-| ![Menu principal](docs/screenshots/menu-principal.png) | ![Bosque de otono](docs/screenshots/nivel-1.png) |
+No se incluyen assets placeholder. Los PNG ilustrados finales deben producirse como arte 2D original antes de reemplazar los sprites actuales.
 
-| Coleccion | Habitacion completada |
-| --- | --- |
-| ![Coleccion](docs/screenshots/nivel-3.png) | ![Habitacion](docs/screenshots/nivel-5.png) |
+Carpeta objetivo para la produccion final:
 
-## Descripcion
+```text
+Assets/Images/MidnightCostumeQuest/
+```
 
-Midnight Room es una propuesta de plataformas 2D donde Mara Noctua explora escenarios de otono para encontrar objetos especiales con los que decorar su habitacion. La experiencia combina desplazamiento lateral, saltos, zonas de doble salto, enemigos, plataformas y una interfaz que registra el rendimiento durante la partida.
+## Concepto
 
-El juego incluye menu principal, panel de equipo, menu de pausa y pantalla final de nivel con resumen de intentos, hallazgos y tiempo.
+La noche anterior a la competencia, una tormenta magica dispersa las piezas del disfraz de Mara por distintos escenarios de Halloween. El jugador debe atravesar niveles, evitar peligros, recolectar piezas y llegar a la meta antes del evento.
 
-## Caracteristicas principales
+## Progresion
+
+- Nivel 1: Cementerio Fashion, sombrero de bruja.
+- Nivel 2: Mercado de Halloween, collar de murcielago.
+- Nivel 3: Bosque de la Luna, botines encantados.
+- Nivel 4: Mansion Encantada, capa magica.
+- Nivel 5: Plaza del Festival, maquillaje especial.
+
+Coleccionables secundarios:
+
+- Dulces.
+- Calabazas.
+- Estrellas.
+- Murcielagos magicos.
+
+## Direccion artistica
+
+- Pastel goth.
+- Spooky cute.
+- Halloween fashion.
+- Chibi detallado.
+- Paleta: lavanda, morado oscuro, negro suave, rosa empolvado, naranja otonal y dorado.
+- Estilo indie comercial para Itch.io o Steam.
+
+Restricciones visuales:
+
+- No copiar Monster High, Disney, Sanrio, Tamagotchi ni personajes existentes.
+- No reutilizar ni simplificar PNG actuales.
+- No usar fondos planos, rectangulos basicos ni composiciones vacias.
+
+## Lista de produccion visual
+
+Personaje:
+
+- Sprite sheet 2D de Mara Midnight.
+- Idle, walk, jump, fall, hurt y victory.
+- Cabello negro con mechas moradas.
+- Ropa alternativa, botines, medias rayadas y accesorios Halloween fashion.
+
+Fondos parallax:
+
+- Cementerio Fashion.
+- Mercado de Halloween.
+- Bosque de la Luna.
+- Mansion Encantada.
+- Plaza del Festival.
+
+Tilesets:
+
+- Plataformas de piedra gotica.
+- Rejas.
+- Tumbas decorativas.
+- Faroles.
+- Escaleras.
+- Puentes.
+- Suelo con detalles.
+- Bordes y esquinas.
+
+Coleccionables:
+
+- Sombrero de bruja.
+- Collar murcielago.
+- Botines encantados.
+- Capa magica.
+- Maquillaje especial.
+- Dulces.
+- Calabazas.
+- Estrellas.
+
+Enemigos:
+
+- Fantasma kawaii.
+- Murcielago.
+- Calabaza viviente.
+- Muneca espeluznante cute.
+
+UI:
+
+- Menu principal.
+- Botones.
+- HUD con vidas, tiempo y coleccionables.
+- Pantalla de pausa.
+- Pantalla final de nivel.
+- Pantalla de victoria.
+
+## Caracteristicas jugables conservadas
 
 - Movimiento horizontal y salto mediante fisicas 2D.
 - Sistema de doble salto en zonas especificas.
-- Recoleccion de objetos decorativos.
+- Recoleccion de objetos.
 - Enemigos y zonas de muerte con reinicio del jugador.
 - Contador de tiempo por intento y tiempo acumulado.
 - Contador de intentos.
-- Pantalla de finalizacion de nivel redisenada como actualizacion de habitacion.
-- Menu principal, equipo y menu de pausa.
+- Pantalla de finalizacion de nivel.
+- Menu principal, creditos y menu de pausa.
 - Cinco escenas de nivel incluidas en la configuracion de build.
-- Paquete visual Midnight Room con personaje, fondos, tilesets, UI, coleccionables y progresion de habitacion.
 
 ## Controles
 
@@ -49,7 +131,7 @@ El juego incluye menu principal, panel de equipo, menu de pausa y pantalla final
 - `nivel4`
 - `nivel5`
 
-## Requisitos del proyecto
+## Requisitos
 
 - Unity `2021.3.11f1`
 - TextMeshPro `3.0.6`
@@ -58,74 +140,14 @@ El juego incluye menu principal, panel de equipo, menu de pausa y pantalla final
 
 ## Como ejecutar desde Unity
 
-1. Clonar o descargar este repositorio.
-2. Abrir la carpeta del proyecto desde Unity Hub.
-3. Usar Unity `2021.3.11f1` o una version compatible de Unity 2021 LTS.
-4. Abrir la escena `Assets/Scenes/MenuPrincipal.unity`.
-5. Presionar `Play` en el editor.
-
-## Build e instalador para Windows
-
-Este repositorio incluye archivos preparados para generar una version instalable para Windows:
-
-- `Assets/Editor/BuildWindows.cs`: compila el juego para Windows desde Unity en modo batch.
-- `tools/BuildWindows.ps1`: ejecuta Unity, genera el build y, si Inno Setup esta instalado, crea el instalador.
-- `installer/Minijuego.iss`: configuracion del instalador para Inno Setup.
-
-Para generar el build y el instalador:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/BuildWindows.ps1
-```
-
-El instalador final se genera en:
-
-```text
-dist/installer/Minijuego-Setup-1.0.exe
-```
-
-Nota: para crear el instalador es necesario tener Unity instalado con soporte Windows y tener Inno Setup disponible en el equipo. Si Unity o Inno Setup no estan instalados, el script mostrara el paso que falta.
-
-## Estructura del proyecto
-
-```text
-Assets/
-  Editor/          Script de build para Windows
-  Images/          Sprites, fondos e iconos del videojuego
-  Prefabs/         Jugador, plataformas, enemigos, UI y elementos de nivel
-  Scenes/          Menu principal y niveles jugables
-  Scripts/         Logica de movimiento, menus, contadores y eventos
-Packages/          Dependencias del proyecto Unity
-ProjectSettings/   Configuracion general del proyecto
-docs/screenshots/  Capturas usadas en este README
-docs/MIDNIGHT_ROOM_ART_BIBLE.md  Guia de arte y mapa de assets
-installer/         Script para generar el instalador de Windows
-tools/             Automatizacion de build
-```
-
-## Direccion de arte
-
-La guia completa de estilo, mapeo de assets y notas de produccion esta en:
-
-```text
-docs/MIDNIGHT_ROOM_ART_BIBLE.md
-```
-
-Los assets nuevos estan en:
-
-```text
-Assets/Images/MidnightRoom/
-```
-
-Los sprites principales existentes tambien fueron reemplazados directamente para preservar referencias de Unity y evitar cambios de mecanicas.
+1. Abrir la carpeta del proyecto desde Unity Hub.
+2. Usar Unity `2021.3.11f1` o una version compatible de Unity 2021 LTS.
+3. Abrir la escena `Assets/Scenes/MenuPrincipal.unity`.
+4. Presionar `Play` en el editor.
 
 ## Creditos
 
 - Estructura base: Charlotte y Gabriel Barrientos.
-- Direccion visual y tematica Midnight Room: Charlotte Rodriguez.
+- Rediseño visual y narrativo propuesto: Midnight Costume Quest.
 - [Gabriel Barrientos](https://github.com/pinguin-frosch)
 - [Charlotte Rodriguez](https://github.com/Thekawaiicokie)
-
-## Contexto academico
-
-Proyecto creado para el Taller de Desarrollo de Videojuegos.
