@@ -1,26 +1,66 @@
 # Minijuego
 
-Videojuego 2D desarrollado en Unity para el Taller de Desarrollo de Videojuegos. El proyecto presenta una experiencia de plataformas con escenarios progresivos, coleccionables, contador de tiempo, contador de intentos y sistema de finalizacion por nivel.
+Videojuego 2D desarrollado originalmente en Unity para el Taller de Desarrollo de Videojuegos. El proyecto presenta una experiencia de plataformas con escenarios progresivos, coleccionables, contador de tiempo, contador de intentos y sistema de finalización por nivel.
 
-## Capturas del videojuego
+## Evolución del proyecto
 
-Las siguientes capturas fueron generadas a partir de las escenas y assets reales incluidos en el proyecto.
+Este repositorio conserva la estructura base desarrollada durante el proyecto académico original por Gabriel Barrientos y Charlotte Rodriguez.
 
-| Menu principal | Nivel 1 |
-| --- | --- |
-| ![Menu principal](docs/screenshots/menu-principal.png) | ![Nivel 1](docs/screenshots/nivel-1.png) |
+Actualmente el proyecto se encuentra en proceso de rediseño visual y conceptual por Charlotte Rodriguez, incorporando una nueva dirección artística, mejoras de experiencia de usuario, modernización de la interfaz y una temática completamente renovada orientada al coleccionismo, exploración y personalización.
 
-| Desafio con obstaculos | Nivel avanzado |
-| --- | --- |
-| ![Nivel 3](docs/screenshots/nivel-3.png) | ![Nivel 5](docs/screenshots/nivel-5.png) |
+### Créditos de desarrollo
 
-## Descripcion
+**Estructura base y desarrollo académico**
 
-Minijuego es una propuesta de plataformas 2D donde el jugador debe avanzar por distintos niveles, evitar peligros, recolectar diamantes y llegar al punto final de cada escena. La experiencia combina desplazamiento lateral, saltos, zonas de doble salto, enemigos, plataformas y una interfaz que registra el rendimiento durante la partida.
+* Gabriel Barrientos
+* Charlotte Rodriguez
 
-El juego incluye un menu principal, panel de creditos, menu de pausa y pantalla final de nivel con resumen de intentos, diamantes y tiempo.
+**Rediseño visual, dirección artística y evolución del proyecto**
 
-## Caracteristicas principales
+* Charlotte Rodriguez
+
+## Nueva temática
+
+La nueva versión transforma el juego de plataformas tradicional en una experiencia de exploración con estética cozy, spooky cute y pastel goth.
+
+La protagonista debe recorrer distintos escenarios inspirados en otoño y Halloween para encontrar objetos decorativos que permitirán personalizar y mejorar su habitación.
+
+Los coleccionables incluyen:
+
+* Labiales alternativos
+* Delineadores
+* Peluches
+* Decoraciones de Halloween
+* Vinilos
+* Posters
+* Lámparas de luna
+* Velas aromáticas
+* Accesorios decorativos
+
+Cada objeto desbloqueado aparece visualmente dentro de la habitación del jugador, permitiendo observar su progreso a medida que avanza por los niveles.
+
+## Objetivos de la actualización
+
+* Modernizar la estética general.
+* Mejorar la interfaz de usuario.
+* Incorporar progresión visual.
+* Añadir coleccionables con utilidad real.
+* Crear una identidad artística propia.
+* Convertir el proyecto en una pieza de portafolio profesional.
+
+## Características principales
+
+* Movimiento horizontal y salto mediante físicas 2D.
+* Sistema de doble salto.
+* Recolección de objetos especiales.
+* Enemigos y obstáculos.
+* Contador de tiempo.
+* Contador de intentos.
+* Pantalla de finalización de nivel.
+* Sistema de progreso de habitación.
+* Menú principal y menú de pausa.
+* Múltiples niveles explorables.
+
 
 - Movimiento horizontal y salto mediante fisicas 2D.
 - Sistema de doble salto en zonas especificas.
