@@ -7,7 +7,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 IMAGES = ROOT / "Assets" / "Images"
-MR = IMAGES / "MidnightRoom"
+MR = IMAGES / "MidnightCostumeQuest"
 
 PALETTE = {
     "lavender": "#c8a7ff",
@@ -15,6 +15,7 @@ PALETTE = {
     "dusty_pink": "#e8a7bd",
     "soft_black": "#17131d",
     "autumn_orange": "#f28c45",
+    "gold": "#f7c35f",
     "cream": "#fff3dc",
     "mint": "#9fd8bd",
     "moon": "#f7df8a",
@@ -253,7 +254,60 @@ def item_icon(kind, label, size=(256, 256)):
     cx, cy = w // 2, h // 2
     shadow = rgba(PALETTE["deep_purple"], 45)
     ellipse(d, (48, 188, 208, 220), shadow)
-    if kind == "lipstick":
+    if kind == "hat":
+        polygon(d, [(78, 125), (132, 38), (170, 126)], rgba(PALETTE["soft_black"]), rgba(PALETTE["deep_purple"]))
+        rr(d, (54, 121, 202, 153), rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]), 4, 13)
+        d.rectangle((111, 100, 153, 118), fill=rgba(PALETTE["autumn_orange"]))
+        rr(d, (123, 96, 142, 122), rgba(PALETTE["gold"]), rgba(PALETTE["deep_purple"]), 2, 4)
+    elif kind == "collar":
+        d.arc((66, 55, 190, 178), 30, 330, fill=rgba(PALETTE["soft_black"]), width=12)
+        polygon(d, [(99, 118), (128, 154), (157, 118), (143, 190), (128, 166), (113, 190)], rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]))
+        ellipse(d, (118, 126, 138, 146), rgba(PALETTE["dusty_pink"]), rgba(PALETTE["deep_purple"]), 3)
+    elif kind == "boots":
+        rr(d, (68, 68, 116, 176), rgba(PALETTE["soft_black"]), rgba(PALETTE["deep_purple"]), 4, 12)
+        rr(d, (134, 68, 182, 176), rgba(PALETTE["soft_black"]), rgba(PALETTE["deep_purple"]), 4, 12)
+        rr(d, (54, 160, 121, 194), rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]), 4, 12)
+        rr(d, (120, 160, 190, 194), rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]), 4, 12)
+        for bx in [82, 148]:
+            d.rectangle((bx, 86, bx + 20, 103), fill=rgba(PALETTE["autumn_orange"]))
+    elif kind == "cape":
+        polygon(d, [(82, 58), (168, 58), (207, 190), (128, 168), (49, 190)], rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]))
+        rr(d, (76, 51, 174, 78), rgba(PALETTE["deep_purple"]), rgba(PALETTE["dusty_pink"]), 3, 12)
+        d.line((128, 76, 128, 171), fill=rgba(PALETTE["plum"]), width=4)
+    elif kind == "makeup":
+        rr(d, (67, 61, 175, 178), rgba(PALETTE["dusty_pink"]), rgba(PALETTE["deep_purple"]), 4, 18)
+        rr(d, (85, 82, 133, 130), rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]), 3, 8)
+        ellipse(d, (94, 91, 123, 120), rgba(PALETTE["plum"]))
+        rr(d, (141, 113, 168, 177), rgba(PALETTE["soft_black"]), rgba(PALETTE["deep_purple"]), 3, 8)
+        rr(d, (144, 82, 164, 124), rgba(PALETTE["dusty_pink"]), rgba(PALETTE["deep_purple"]), 2, 7)
+    elif kind == "candy":
+        rr(d, (87, 99, 169, 151), rgba(PALETTE["dusty_pink"]), rgba(PALETTE["deep_purple"]), 4, 20)
+        polygon(d, [(80, 125), (43, 93), (48, 157)], rgba(PALETTE["autumn_orange"]), rgba(PALETTE["deep_purple"]))
+        polygon(d, [(176, 125), (213, 93), (208, 157)], rgba(PALETTE["autumn_orange"]), rgba(PALETTE["deep_purple"]))
+        draw_star(d, 128, 125, 19, rgba(PALETTE["gold"]))
+    elif kind == "star":
+        draw_star(d, 128, 120, 74, rgba(PALETTE["gold"]))
+        draw_star(d, 128, 120, 36, rgba(PALETTE["cream"], 180))
+    elif kind == "pumpkin":
+        ellipse(d, (61, 81, 124, 183), rgba(PALETTE["autumn_orange"]), rgba(PALETTE["deep_purple"]), 4)
+        ellipse(d, (104, 73, 167, 190), rgba(PALETTE["autumn_orange"]), rgba(PALETTE["deep_purple"]), 4)
+        ellipse(d, (143, 82, 205, 181), rgba(PALETTE["autumn_orange"]), rgba(PALETTE["deep_purple"]), 4)
+        polygon(d, [(128, 54), (147, 74), (121, 82)], rgba(PALETTE["mint"]), rgba(PALETTE["deep_purple"]))
+        polygon(d, [(101, 125), (118, 112), (116, 136)], rgba(PALETTE["soft_black"]))
+        polygon(d, [(158, 125), (175, 112), (173, 136)], rgba(PALETTE["soft_black"]))
+        d.arc((108, 137, 178, 167), 10, 170, fill=rgba(PALETTE["soft_black"]), width=5)
+    elif kind == "bat":
+        ellipse(d, (111, 101, 151, 145), rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]), 3)
+        polygon(d, [(112, 119), (45, 82), (75, 139), (45, 162)], rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]))
+        polygon(d, [(150, 119), (217, 82), (187, 139), (217, 162)], rgba(PALETTE["soft_black"]), rgba(PALETTE["lavender"]))
+        ellipse(d, (121, 118, 126, 124), rgba(PALETTE["dusty_pink"]))
+        ellipse(d, (138, 118, 143, 124), rgba(PALETTE["dusty_pink"]))
+    elif kind == "ghost":
+        ellipse(d, (68, 62, 188, 175), rgba(PALETTE["cream"]), rgba(PALETTE["deep_purple"]), 4)
+        polygon(d, [(68, 132), (68, 202), (94, 178), (119, 202), (145, 178), (188, 202), (188, 132)], rgba(PALETTE["cream"]), rgba(PALETTE["deep_purple"]))
+        ellipse(d, (101, 115, 113, 130), rgba(PALETTE["soft_black"]))
+        ellipse(d, (145, 115, 157, 130), rgba(PALETTE["soft_black"]))
+    elif kind == "lipstick":
         rr(d, (95, 72, 152, 186), rgba(PALETTE["soft_black"]), rgba(PALETTE["deep_purple"]), 4, 18)
         rr(d, (108, 42, 139, 92), rgba(PALETTE["dusty_pink"]), rgba(PALETTE["deep_purple"]), 4, 11)
         d.rectangle((101, 130, 146, 142), fill=rgba(PALETTE["lavender"]))
@@ -307,21 +361,19 @@ def item_icon(kind, label, size=(256, 256)):
 
 def collectibles():
     items = [
-        ("lipstick", "Labial"),
-        ("liner", "Delineador"),
-        ("candle", "Vela"),
-        ("plush", "Peluche"),
-        ("moonlamp", "Luna"),
-        ("poster", "Poster"),
-        ("vinyl", "Vinilo"),
-        ("plant", "Planta"),
-        ("mirror", "Espejo"),
-        ("stickers", "Stickers"),
-        ("accessory", "Audifonos"),
+        ("hat", "Sombrero"),
+        ("collar", "Collar"),
+        ("boots", "Botines"),
+        ("cape", "Capa"),
+        ("makeup", "Maquillaje"),
+        ("candy", "Dulce"),
+        ("star", "Estrella"),
+        ("pumpkin", "Calabaza"),
+        ("bat", "Murcielago"),
     ]
     for kind, label in items:
         save(item_icon(kind, label), MR / "Collectibles" / f"{kind}.png")
-    save(item_icon("lipstick", "Hallazgo", (174, 157)), IMAGES / "Diamante.png")
+    save(item_icon("hat", "Pieza", (174, 157)), IMAGES / "Diamante.png")
     atlas = transparent((1024, 768))
     d = ImageDraw.Draw(atlas)
     d.text((40, 24), "Midnight Room collectible set", fill=rgba(PALETTE["deep_purple"]), font=font(36, True))
@@ -386,17 +438,17 @@ def background(name, index, mood):
 
 def backgrounds():
     names = [
-        ("Fondo.png", "Bosque de otono"),
-        ("Fondo2.png", "Calle nocturna"),
-        ("Fondo3.png", "Tienda vintage"),
-        ("Fondo4.png", "Mercado Halloween"),
-        ("Fondo5.png", "Habitacion cozy"),
+        ("Fondo.png", "Cementerio Fashion"),
+        ("Fondo2.png", "Mercado de Halloween"),
+        ("Fondo3.png", "Bosque de la Luna"),
+        ("Fondo4.png", "Mansion Encantada"),
+        ("Fondo5.png", "Plaza del Festival"),
     ]
     for i, (filename, mood) in enumerate(names, start=1):
         img = background(filename, i, mood)
         save(img, IMAGES / "Fondos" / filename)
         save(img, MR / "Backgrounds" / filename)
-    save(background("rooftop", 2, "Azotea bajo la luna"), MR / "Backgrounds" / "rooftop_moon.png")
+    save(background("final", 5, "Competencia de Disfraces"), MR / "Backgrounds" / "costume_competition_final.png")
 
 
 def tile(fill, trim, pattern="leaves", size=(3464, 3464)):
