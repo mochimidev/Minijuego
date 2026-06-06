@@ -2,35 +2,25 @@ estructura base charlotte y gabirel barrientos estructura visual y tematica neuv
 
 # Minijuego
 
-Videojuego 2D desarrollado en Unity como proyecto academico del Taller de Desarrollo de Videojuegos. La version actual presenta una experiencia de plataformas con menu principal, niveles progresivos, coleccionables, enemigos, zonas de muerte, contador de tiempo, contador de intentos y pantalla final de nivel.
+Videojuego 2D desarrollado en Unity para el Taller de Desarrollo de Videojuegos. El proyecto presenta una experiencia de plataformas con escenarios progresivos, coleccionables, contador de tiempo, contador de intentos y sistema de finalizacion por nivel.
 
-El proyecto tambien funciona como base para una futura reinterpretacion visual y tematica con identidad cozy, alternativa, pastel goth y Halloween adorable.
+## Capturas del videojuego
 
-## Interfaz actual
+Las siguientes capturas fueron generadas a partir de las escenas y assets reales incluidos en el proyecto.
 
-Las siguientes capturas muestran la interfaz y los escenarios reales incluidos actualmente en el proyecto.
+| Menu principal | Nivel 1 |
+| --- | --- |
+| ![Menu principal](docs/screenshots/menu-principal.png) | ![Nivel 1](docs/screenshots/nivel-1.png) |
 
-### Menu principal
+| Desafio con obstaculos | Nivel avanzado |
+| --- | --- |
+| ![Nivel 3](docs/screenshots/nivel-3.png) | ![Nivel 5](docs/screenshots/nivel-5.png) |
 
-<img src="docs/screenshots/menu-principal.png" alt="Menu principal actual del videojuego" width="100%">
-
-### Nivel 1
-
-<img src="docs/screenshots/nivel-1.png" alt="Primer nivel jugable" width="100%">
-
-### Nivel con obstaculos
-
-<img src="docs/screenshots/nivel-3.png" alt="Nivel con plataformas, obstaculos y contador de progreso" width="100%">
-
-### Nivel avanzado
-
-<img src="docs/screenshots/nivel-5.png" alt="Nivel avanzado del videojuego" width="100%">
-
-## Descripcion del juego actual
+## Descripcion
 
 Minijuego es una propuesta de plataformas 2D donde el jugador debe avanzar por distintos niveles, evitar peligros, recolectar diamantes y llegar al punto final de cada escena. La experiencia combina desplazamiento lateral, saltos, zonas de doble salto, enemigos, plataformas y una interfaz que registra el rendimiento durante la partida.
 
-El juego incluye menu principal, panel de creditos, menu de pausa y pantalla final de nivel con resumen de intentos, diamantes y tiempo.
+El juego incluye un menu principal, panel de creditos, menu de pausa y pantalla final de nivel con resumen de intentos, diamantes y tiempo.
 
 ## Caracteristicas principales
 
