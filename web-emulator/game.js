@@ -189,6 +189,22 @@ function resetLevel(keepLives = false) {
   updateHud();
 }
 
+function startIntro() {
+  gameMode = "intro";
+  started = true;
+  won = false;
+  paused = false;
+  introTime = 0;
+  particles = [];
+  overlay.hidden = true;
+}
+
+function beginGameplay() {
+  gameMode = "play";
+  introTime = 0;
+  resetLevel(false);
+}
+
 function updateHud() {
   const level = levels[levelIndex];
   levelNameEl.textContent = `${levelIndex + 1}. ${level.name}`;
@@ -323,11 +339,11 @@ function damagePlayer() {
 
 function completeLevel() {
   won = true;
-  overlay.hidden = false;
-  overlay.querySelector("h1").textContent = "Felicidades";
-  overlay.querySelector("p").textContent = "¡Felicidades! Has conseguido todos los items para tu disfraz. ¡Feliz Halloween!";
-  startBtn.textContent = levelIndex === levels.length - 1 ? "Volver a jugar" : "Siguiente nivel";
-  creditsBtn.hidden = true;
+  gameMode = "ending";
+  endingTime = 0;
+  player.vx = 0;
+  player.vy = 0;
+  burst(player.x + player.w / 2, player.y + 10, "#ffd36b", 28);
 }
 
 function burst(x, y, color, count) {
