@@ -394,6 +394,19 @@ function drawCoverImage(path, x, y, w, h, focusY = 0.5) {
 function render() {
   const level = levels[levelIndex];
   ctx.clearRect(0, 0, W, H);
+
+  if (gameMode === "intro") {
+    drawIntroScene();
+    drawParticles();
+    return;
+  }
+
+  if (gameMode === "ending") {
+    drawEndingScene();
+    drawParticles();
+    return;
+  }
+
   drawCoverImage(level.bg, 0, 0, W, H, 0.47);
   drawParallaxAndAtmosphere();
 
@@ -405,6 +418,7 @@ function render() {
   drawGate();
   drawMara();
   drawParticles();
+  drawStoryBubble();
   drawCanvasHud();
 
   if (paused) {
@@ -412,6 +426,139 @@ function render() {
     ctx.fillRect(0, 0, W, H);
     drawPixelText("PAUSA", W / 2 - 78, H / 2, 42, "#ffd36b");
   }
+}
+
+function drawIntroScene() {
+  const t = introTime;
+  ctx.save();
+  const wall = ctx.createLinearGradient(0, 0, 0, H);
+  wall.addColorStop(0, "#170d2a");
+  wall.addColorStop(1, "#3a1841");
+  ctx.fillStyle = wall;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "#241235";
+  ctx.fillRect(0, 420, W, 156);
+  ctx.fillStyle = "#4a2554";
+  for (let x = 0; x < W; x += 80) ctx.fillRect(x, 420, 42, 156);
+
+  ctx.fillStyle = "#0c0920";
+  ctx.beginPath();
+  ctx.roundRect(640, 66, 280, 250, 16);
+  ctx.fill();
+  ctx.strokeStyle = "#b86bf4";
+  ctx.lineWidth = 6;
+  ctx.stroke();
+  ctx.fillStyle = "#ffd36b";
+  ctx.beginPath();
+  ctx.arc(812, 132, 44, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#0c0920";
+  ctx.beginPath();
+  ctx.arc(832, 118, 40, 0, Math.PI * 2);
+  ctx.fill();
+  drawBat(700 + Math.sin(t * 2) * 20, 158, 1);
+  drawBat(855 - Math.sin(t * 2.2) * 18, 204, 0.75);
+
+  ctx.fillStyle = "#5b2f67";
+  ctx.beginPath();
+  ctx.roundRect(70, 360, 380, 80, 12);
+  ctx.fill();
+  ctx.fillStyle = "#ffb8f4";
+  ctx.fillRect(92, 372, 336, 8);
+
+  const worry = t > 2.1;
+  drawPajamaMara(170 + Math.sin(t * 2) * 2, 242, worry);
+  ctx.fillStyle = "#f39a43";
+  drawTinyPumpkin(104, 346);
+  drawTinyPumpkin(410, 344);
+
+  if (t > 1.0) drawDialogueBox("¡Es Halloween y aún no tengo mi disfraz!", 88, 64, 510);
+  if (t > 3.5) drawDialogueBox("Ayúdame a encontrar todas las piezas antes de que termine la noche.", 92, 145, 560);
+  if (t > 5.6) drawPixelText("Presiona ESPACIO para empezar", 330, 530, 20, "#ffd36b");
+  ctx.restore();
+}
+
+function drawPajamaMara(x, y, worry) {
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,.45)";
+  ctx.shadowBlur = 10;
+  ctx.strokeStyle = "#ffd4f0";
+  ctx.lineWidth = 3;
+  ctx.fillStyle = "#2a142a";
+  ctx.beginPath();
+  ctx.ellipse(x + 42, y + 50, 44, 50, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#ffc0b5";
+  ctx.beginPath();
+  ctx.arc(x + 46, y + 55, 31, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#ff9ed4";
+  ctx.beginPath();
+  ctx.roundRect(x + 16, y + 93, 58, 86, 14);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = "#ffc0b5";
+  ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(x + 22, y + 112);
+  ctx.lineTo(x - 8, y + 142);
+  ctx.moveTo(x + 70, y + 112);
+  ctx.lineTo(x + 102, y + 125);
+  ctx.moveTo(x + 34, y + 178);
+  ctx.lineTo(x + 24, y + 228);
+  ctx.moveTo(x + 58, y + 178);
+  ctx.lineTo(x + 68, y + 228);
+  ctx.stroke();
+  ctx.fillStyle = "#fff4fa";
+  ctx.beginPath();
+  ctx.arc(x + 34, y + 55, 5, 0, Math.PI * 2);
+  ctx.arc(x + 58, y + 55, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#8b3765";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  if (worry) ctx.arc(x + 46, y + 76, 9, Math.PI + 0.2, Math.PI * 2 - 0.2);
+  else ctx.arc(x + 46, y + 70, 9, 0.1, Math.PI - 0.1);
+  ctx.stroke();
+  if (worry) {
+    drawPixelText("!", x + 94, y + 34, 34, "#ffd36b");
+  }
+  ctx.restore();
+}
+
+function drawEndingScene() {
+  const t = endingTime;
+  drawCoverImage(levels[levelIndex].bg, 0, 0, W, H, 0.47);
+  ctx.fillStyle = "rgba(14, 6, 24, 0.38)";
+  ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 12; i++) {
+    drawTinyPumpkin(70 + i * 82, 500 + Math.sin(t * 2 + i) * 5);
+  }
+  const bounce = Math.sin(t * 8) * 8;
+  drawImage(hd("Character/idle.png"), 430, 210 + bounce, 150, 215);
+  itemCatalog.forEach((item, i) => {
+    const angle = t * 0.8 + i * (Math.PI * 2 / itemCatalog.length);
+    drawImage(item.asset, 505 + Math.cos(angle) * 145 - 24, 300 + Math.sin(angle) * 70 - 24, 48, 48);
+  });
+  drawDialogueBox("¡Felicidades! Has conseguido todos los ítems para tu disfraz.", 195, 70, 640);
+  drawDialogueBox("¡Feliz Halloween!", 352, 148, 320);
+  if (t > 2.2) drawPixelText("Presiona JUGAR para continuar", 330, 520, 21, "#ffd36b");
+}
+
+function drawDialogueBox(text, x, y, w) {
+  ctx.save();
+  ctx.fillStyle = "rgba(20, 9, 31, 0.9)";
+  ctx.strokeStyle = "#d978f5";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, 58, 10);
+  ctx.fill();
+  ctx.stroke();
+  drawPixelText(text, x + 18, y + 37, 18, "#fff0fb");
+  ctx.restore();
 }
 
 function drawParallaxAndAtmosphere() {
@@ -602,16 +749,39 @@ function drawMara() {
   else if (Math.abs(player.vx) > 1) sprite = Math.floor(player.walkTime * 8) % 2 ? hd("Character/run_1.png") : hd("Character/run_2.png");
 
   const img = images.get(sprite);
-  const targetH = Math.abs(player.vx) > 1 ? 176 : 160;
+  const celebrating = celebrateTimer > 0;
+  const targetH = celebrating ? 178 : Math.abs(player.vx) > 1 ? 176 : 160;
   const targetW = img?.naturalHeight ? targetH * (img.naturalWidth / img.naturalHeight) : 118;
   const drawX = player.x + player.w / 2 - targetW / 2;
-  const drawY = player.y + player.h - targetH + 12;
+  const drawY = player.y + player.h - targetH + 12 - (celebrating ? Math.sin(celebrateTimer * 22) * 8 : 0);
   ctx.save();
   ctx.globalAlpha = player.invulnerable > 0 && Math.floor(performance.now() / 90) % 2 === 0 ? 0.55 : 1;
   ctx.shadowColor = "rgba(0, 0, 0, 0.48)";
   ctx.shadowBlur = 14;
   ctx.shadowOffsetY = 6;
   drawImage(sprite, drawX, drawY, targetW, targetH, player.facing < 0);
+  if (celebrating) {
+    drawPixelText("★", player.x + 54, player.y - 38, 26, "#ffd36b");
+    drawPixelText("★", player.x - 18, player.y - 20, 18, "#f7a6ff");
+  }
+  ctx.restore();
+}
+
+function drawStoryBubble() {
+  if (storyMessageTimer <= 0 || !storyMessage) return;
+  const alpha = Math.min(1, storyMessageTimer);
+  const x = Math.max(18, Math.min(W - 560, player.x - 110));
+  const y = Math.max(56, player.y - 94);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "rgba(28, 10, 38, 0.93)";
+  ctx.strokeStyle = "#ffd36b";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(x, y, 520, 48, 10);
+  ctx.fill();
+  ctx.stroke();
+  drawPixelText(storyMessage, x + 14, y + 31, 17, "#fff0fb");
   ctx.restore();
 }
 
