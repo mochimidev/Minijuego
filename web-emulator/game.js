@@ -20,11 +20,11 @@ const hd = (path) => `./hd/${path}`;
 const asset = (path) => `../Assets/Images/MidnightCostumeQuest/${path}`;
 
 const itemCatalog = [
-  { name: "Sombrero", asset: hd("Collectibles/witch_hat.png") },
-  { name: "Capa", asset: hd("Collectibles/magic_cape.png") },
-  { name: "Varita", asset: hd("Collectibles/magic_wand.png") },
-  { name: "Botas", asset: hd("Collectibles/boots.png") },
-  { name: "Accesorio", asset: hd("Collectibles/accessory.png") },
+  { name: "Sombrero", asset: hd("Collectibles/witch_hat.png"), message: "¡Encontré mi sombrero de bruja!" },
+  { name: "Capa", asset: hd("Collectibles/magic_cape.png"), message: "¡Esta capa combina perfecto!" },
+  { name: "Varita", asset: hd("Collectibles/magic_wand.png"), message: "¡Ahora tengo magia!" },
+  { name: "Botas", asset: hd("Collectibles/boots.png"), message: "¡Lista para correr por Halloween!" },
+  { name: "Accesorio", asset: hd("Collectibles/accessory.png"), message: "¡Mi disfraz está casi completo!" },
 ];
 
 const platformThemes = ["tomb", "book", "branch", "pumpkin", "cloud"];
@@ -102,9 +102,15 @@ let collected = new Set();
 let lives = 3;
 let elapsed = 0;
 let started = false;
+let gameMode = "menu";
 let paused = false;
 let won = false;
 let lastTime = performance.now();
+let introTime = 0;
+let endingTime = 0;
+let storyMessage = "";
+let storyMessageTimer = 0;
+let celebrateTimer = 0;
 let particles = [];
 let magicDust = Array.from({ length: 70 }, (_, i) => ({
   x: (i * 173) % W,
@@ -220,9 +226,31 @@ function findLandingPlatform(previousBottom, currentBottom) {
 }
 
 function step(dt) {
-  if (!started || paused || won) return;
+  if (gameMode === "intro") {
+    introTime += dt;
+    particles = particles
+      .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt }))
+      .filter((p) => p.life > 0);
+    if (introTime > 7.2 || keys.has("Enter") || keys.has("Space")) beginGameplay();
+    return;
+  }
+
+  if (gameMode === "ending") {
+    endingTime += dt;
+    if (Math.floor(endingTime * 10) % 5 === 0) {
+      burst(500 + Math.sin(endingTime * 2) * 130, 260 + Math.cos(endingTime * 3) * 55, "#ffd36b", 2);
+    }
+    particles = particles
+      .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt, vy: p.vy + 90 * dt }))
+      .filter((p) => p.life > 0);
+    return;
+  }
+
+  if (!started || paused || won || gameMode !== "play") return;
   elapsed += dt;
   player.invulnerable = Math.max(0, player.invulnerable - dt);
+  storyMessageTimer = Math.max(0, storyMessageTimer - dt);
+  celebrateTimer = Math.max(0, celebrateTimer - dt);
 
   const left = keys.has("ArrowLeft") || keys.has("KeyA");
   const right = keys.has("ArrowRight") || keys.has("KeyD");
@@ -266,6 +294,9 @@ function step(dt) {
     if (rectsOverlap(player, itemBox)) {
       collected.add(index);
       burst(item.x, item.y, "#ffd36b", 18);
+      storyMessage = itemCatalog[item.itemType].message;
+      storyMessageTimer = 2.8;
+      celebrateTimer = 0.65;
       updateHud();
     }
   });
@@ -274,7 +305,7 @@ function step(dt) {
     .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt, vy: p.vy + 220 * dt }))
     .filter((p) => p.life > 0);
 
-  if (collected.size === level.items.length && player.x > 940) completeLevel();
+  if (collected.size === level.items.length) completeLevel();
   player.walkTime += dt;
   updateHud();
 }
