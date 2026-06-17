@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Midnight Costume Quest - Web Emulator</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hud" aria-label="Estado del juego">
+        <div>
+          <span class="label">Nivel</span>
+          <strong id="levelName">Menu</strong>
+        </div>
+        <div>
+          <span class="label">Disfraz</span>
+          <strong id="items">0/5</strong>
+        </div>
+        <div>
+          <span class="label">Vidas</span>
+          <strong id="lives">♥♥♥</strong>
+        </div>
+        <div>
+          <span class="label">Tiempo</span>
+          <strong id="time">0</strong>
+        </div>
+      </section>
+
+      <section class="inventory" aria-label="Items del disfraz">
+        <span class="objective">Recolecta todos los items para completar tu disfraz de Halloween.</span>
+        <div id="itemIcons" class="item-icons"></div>
+      </section>
+
+      <div class="stage-wrap">
+        <canvas id="game" width="1024" height="576" aria-label="Minijuego emulado"></canvas>
+        <div id="overlay" class="overlay">
+          <h1>Midnight Costume Quest</h1>
+          <p>Ayuda a la protagonista a conseguir todos los items para completar su disfraz de Halloween.</p>
+          <div class="menu-actions">
+            <button id="startBtn" type="button">Jugar</button>
+            <button id="creditsBtn" type="button">Creditos</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="controls" aria-label="Controles">
+        <button id="prevLevel" type="button" title="Nivel anterior">◀</button>
+        <button id="restart" type="button" title="Reiniciar nivel">↻</button>
+        <button id="nextLevel" type="button" title="Nivel siguiente">▶</button>
+        <span>Flechas o A/D para moverte, Espacio/W para saltar, Abajo/S para caer rapido, Esc para pausar.</span>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>

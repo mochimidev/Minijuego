@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 5c85455d215064e51832a716ea77b19e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 079a8e02a4d84908a4b875d3292d51da, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -98,6 +98,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd1fcfb72429c24ef833ea562a6e9546, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nombreItem: Item del disfraz
+  colorBrillo: {r: 1, g: 0.56, b: 1, a: 1}
+  variantesDisfraz:
+  - {fileID: 21300000, guid: 079a8e02a4d84908a4b875d3292d51da, type: 3}
+  - {fileID: 21300000, guid: 34b46e33fbca4cd39a67a274e1999f0f, type: 3}
+  - {fileID: 21300000, guid: 853fcba74efe4146a3ba0ea2a3befa90, type: 3}
+  - {fileID: 21300000, guid: dfef253bdaab4e8fb74aa204b56ef64d, type: 3}
+  - {fileID: 21300000, guid: 4023d132195a432990acb8670cc5b0bc, type: 3}
+  - {fileID: 21300000, guid: 5e66b16500d8456494f978e2236f70e6, type: 3}
+  - {fileID: 21300000, guid: a35bb65c6b83484fad296394cdb78d15, type: 3}
 --- !u!61 &4882905470976292482
 BoxCollider2D:
   m_ObjectHideFlags: 0

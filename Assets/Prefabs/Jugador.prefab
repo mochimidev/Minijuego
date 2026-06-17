@@ -77,7 +77,7 @@ SpriteRenderer:
   m_SortingLayerID: 1777536043
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 61fb4c1eb4450292791d22418f860fb0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: acdb700a8ec74e8e87c0573d9ec80e14, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -139,6 +139,11 @@ MonoBehaviour:
   CapaPiso:
     serializedVersion: 2
     m_Bits: 8
+  SpriteIdle: {fileID: 21300000, guid: acdb700a8ec74e8e87c0573d9ec80e14, type: 3}
+  SpriteCaminar1: {fileID: 21300000, guid: 5a8688541e814d06968d8e255839eabb, type: 3}
+  SpriteCaminar2: {fileID: 21300000, guid: d3980e277c8941ee97693b2c4fbba5fd, type: 3}
+  SpriteSalto: {fileID: 21300000, guid: 15b75ff6fba54283b3306e29c3f9801d, type: 3}
+  SpriteCaida: {fileID: 21300000, guid: 65642f7f74f241379b65d545046cf0c3, type: 3}
 --- !u!61 &5604920363011053353
 BoxCollider2D:
   m_ObjectHideFlags: 0

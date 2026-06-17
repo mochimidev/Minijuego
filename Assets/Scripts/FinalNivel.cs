@@ -8,7 +8,14 @@ public class FinalNivel : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            GestorEventos.IniciarEventoCompletarNivel();
+            if (ContadorDiamantes.TodosLosItemsConseguidos)
+            {
+                GestorEventos.IniciarEventoCompletarNivel();
+            }
+            else
+            {
+                Debug.Log("Aun faltan items del disfraz por conseguir.");
+            }
         }
     }
 }

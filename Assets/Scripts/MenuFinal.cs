@@ -12,6 +12,7 @@ public class MenuFinal : MonoBehaviour
     public TMP_Text TextoIntentos;
     public TMP_Text TextoDiamantes;
     public TMP_Text TextoTiempo;
+    public Sprite SpriteDisfrazCompleto;
 
     private void Awake()
     {
@@ -32,15 +33,36 @@ public class MenuFinal : MonoBehaviour
         TextoIntentos.text = intentos.ToString();
 
         int diamantes = ContadorDiamantes.DiamantesConseguidos;
-        TextoDiamantes.text = diamantes.ToString();
+        TextoDiamantes.text = diamantes + "/" + ContadorDiamantes.TotalDiamantes;
     }
 
     public void AbrirMenuFinal()
     {
         actulizarUI();
+        mostrarDisfrazCompleto();
         BotonMenuPrincipal.Select();
         Time.timeScale = 0;
         PanelFinalNivel.SetActive(true);
+    }
+
+    private void mostrarDisfrazCompleto()
+    {
+        if (SpriteDisfrazCompleto == null)
+        {
+            return;
+        }
+
+        GameObject jugador = GameObject.FindGameObjectWithTag("Player");
+        if (jugador == null)
+        {
+            return;
+        }
+
+        SpriteRenderer rendererJugador = jugador.GetComponent<SpriteRenderer>();
+        if (rendererJugador != null)
+        {
+            rendererJugador.sprite = SpriteDisfrazCompleto;
+        }
     }
 
     public void ReiniciarNivel()
