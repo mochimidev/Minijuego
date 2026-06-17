@@ -259,6 +259,7 @@ function step(dt) {
     particles = particles
       .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt, vy: p.vy + 90 * dt }))
       .filter((p) => p.life > 0);
+    if (endingTime > 2.0 && (keys.has("Enter") || keys.has("Space"))) continueAfterEnding();
     return;
   }
 
@@ -344,6 +345,12 @@ function completeLevel() {
   player.vx = 0;
   player.vy = 0;
   burst(player.x + player.w / 2, player.y + 10, "#ffd36b", 28);
+}
+
+function continueAfterEnding() {
+  if (levelIndex < levels.length - 1) levelIndex += 1;
+  else levelIndex = 0;
+  beginGameplay();
 }
 
 function burst(x, y, color, count) {
@@ -545,20 +552,42 @@ function drawEndingScene() {
   });
   drawDialogueBox("¡Felicidades! Has conseguido todos los ítems para tu disfraz.", 195, 70, 640);
   drawDialogueBox("¡Feliz Halloween!", 352, 148, 320);
-  if (t > 2.2) drawPixelText("Presiona JUGAR para continuar", 330, 520, 21, "#ffd36b");
+  if (t > 2.2) drawPixelText("Presiona ESPACIO para continuar", 320, 520, 21, "#ffd36b");
 }
 
 function drawDialogueBox(text, x, y, w) {
   ctx.save();
+  const lines = wrapText(text, w - 36, 18);
+  const h = 34 + lines.length * 24;
   ctx.fillStyle = "rgba(20, 9, 31, 0.9)";
   ctx.strokeStyle = "#d978f5";
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.roundRect(x, y, w, 58, 10);
+  ctx.roundRect(x, y, w, h, 10);
   ctx.fill();
   ctx.stroke();
-  drawPixelText(text, x + 18, y + 37, 18, "#fff0fb");
+  lines.forEach((line, index) => drawPixelText(line, x + 18, y + 34 + index * 24, 18, "#fff0fb"));
   ctx.restore();
+}
+
+function wrapText(text, maxWidth, size) {
+  ctx.save();
+  ctx.font = `800 ${size}px "Trebuchet MS", sans-serif`;
+  const words = text.split(" ");
+  const lines = [];
+  let line = "";
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  ctx.restore();
+  return lines;
 }
 
 function drawParallaxAndAtmosphere() {
@@ -835,13 +864,18 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => keys.delete(event.code));
 
 startBtn.addEventListener("click", () => {
-  if (won && levelIndex < levels.length - 1) levelIndex += 1;
-  else if (won && levelIndex === levels.length - 1) levelIndex = 0;
-  started = true;
-  overlay.hidden = true;
+  if (gameMode === "ending") {
+    if (levelIndex < levels.length - 1) levelIndex += 1;
+    else levelIndex = 0;
+    overlay.hidden = true;
+    beginGameplay();
+    return;
+  }
+  overlay.querySelector("h1").textContent = "Midnight Costume Quest";
+  overlay.querySelector("p").textContent = "Acompaña a una chica kawaii en su aventura para completar su disfraz de Halloween.";
   startBtn.textContent = "Jugar";
   creditsBtn.hidden = false;
-  resetLevel(false);
+  startIntro();
 });
 
 creditsBtn.addEventListener("click", () => {
@@ -853,12 +887,14 @@ document.querySelector("#restart").addEventListener("click", () => resetLevel(fa
 document.querySelector("#prevLevel").addEventListener("click", () => {
   levelIndex = (levelIndex + levels.length - 1) % levels.length;
   started = true;
+  gameMode = "play";
   overlay.hidden = true;
   resetLevel(false);
 });
 document.querySelector("#nextLevel").addEventListener("click", () => {
   levelIndex = (levelIndex + 1) % levels.length;
   started = true;
+  gameMode = "play";
   overlay.hidden = true;
   resetLevel(false);
 });
