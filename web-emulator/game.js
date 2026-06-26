@@ -2,156 +2,839 @@ const canvas = document.querySelector("#game");
 const ctx = canvas.getContext("2d");
 const overlay = document.querySelector("#overlay");
 const startBtn = document.querySelector("#startBtn");
+const continueBtn = document.querySelector("#continueBtn");
+const optionsBtn = document.querySelector("#optionsBtn");
 const creditsBtn = document.querySelector("#creditsBtn");
+const exitBtn = document.querySelector("#exitBtn");
 const levelNameEl = document.querySelector("#levelName");
 const itemsEl = document.querySelector("#items");
 const livesEl = document.querySelector("#lives");
 const timeEl = document.querySelector("#time");
 const itemIconsEl = document.querySelector("#itemIcons");
+const objectiveEl = document.querySelector("#objective");
+document.body.classList.add("menu-mode");
 
 const W = 1024;
 const H = 576;
-const gravity = 1950;
-const maxFallSpeed = 1350;
+const SAVE_KEY = "moonParcelSaveV1";
 const keys = new Set();
 const images = new Map();
+const missingAssets = new Set();
+const ASSET_VERSION = new URLSearchParams(window.location.search).get("assetVersion") || `external-${Date.now()}`;
+const asset = (path) => `./assets/${path}?v=${ASSET_VERSION}`;
+const PLACEHOLDER_ASSET = asset("ui/PENDIENTE_ASSET.png");
 
-const hd = (path) => `./hd/${path}`;
-const asset = (path) => `../Assets/Images/MidnightCostumeQuest/${path}`;
-
-const itemCatalog = [
-  { name: "Sombrero", asset: hd("Collectibles/witch_hat.png"), message: "¡Encontré mi sombrero de bruja!" },
-  { name: "Capa", asset: hd("Collectibles/magic_cape.png"), message: "¡Esta capa combina perfecto!" },
-  { name: "Varita", asset: hd("Collectibles/magic_wand.png"), message: "¡Ahora tengo magia!" },
-  { name: "Botas", asset: hd("Collectibles/boots.png"), message: "¡Lista para correr por Halloween!" },
-  { name: "Accesorio", asset: hd("Collectibles/accessory.png"), message: "¡Mi disfraz está casi completo!" },
-];
-
-const platformThemes = ["tomb", "book", "branch", "pumpkin", "cloud"];
-
-const levels = [
-  createLevel("Cementerio Fashion", "cementerio_fashion", [
-    platform("pumpkin", 0, 512, 1024, 64),
-    platform("tomb", 280, 392, 190, 36),
-    platform("book", 560, 300, 210, 34),
-    platform("branch", 780, 420, 190, 34),
-  ], [
-    point(325, 350, 0), point(610, 258, 1), point(840, 378, 2), point(90, 460, 3), point(930, 360, 4),
-  ], [
-    enemy(520, 452, 350, 690), enemy(855, 360, 780, 970),
-  ]),
-  createLevel("Mercado de Halloween", "mercado_de_halloween", [
-    platform("pumpkin", 0, 512, 1024, 64),
-    platform("cloud", 175, 408, 160, 34),
-    platform("book", 460, 330, 210, 34),
-    platform("tomb", 760, 420, 190, 36),
-  ], [
-    point(210, 366, 0), point(520, 288, 1), point(820, 378, 2), point(620, 470, 3), point(910, 360, 4),
-  ], [
-    enemy(410, 452, 310, 620), enemy(810, 360, 760, 950),
-  ]),
-  createLevel("Bosque de la Luna", "bosque_de_la_luna", [
-    platform("pumpkin", 0, 512, 1024, 64),
-    platform("branch", 180, 405, 200, 32),
-    platform("cloud", 470, 300, 190, 34),
-    platform("tomb", 740, 390, 185, 36),
-    platform("book", 580, 455, 145, 34),
-  ], [
-    point(225, 362, 0), point(530, 258, 1), point(790, 348, 2), point(620, 412, 3), point(910, 350, 4),
-  ], [
-    enemy(340, 452, 250, 520), enemy(825, 330, 740, 930),
-  ]),
-  createLevel("Mansion Encantada", "mansion_encantada", [
-    platform("pumpkin", 0, 512, 1024, 64),
-    platform("book", 230, 385, 190, 34),
-    platform("tomb", 515, 442, 185, 36),
-    platform("cloud", 720, 310, 210, 34),
-  ], [
-    point(270, 342, 0), point(565, 400, 1), point(780, 268, 2), point(890, 268, 3), point(90, 460, 4),
-  ], [
-    enemy(520, 452, 430, 710), enemy(790, 250, 710, 930),
-  ]),
-  createLevel("Plaza del Festival", "plaza_del_festival", [
-    platform("pumpkin", 0, 512, 1024, 64),
-    platform("cloud", 130, 380, 180, 34),
-    platform("branch", 390, 310, 210, 32),
-    platform("book", 650, 380, 170, 34),
-    platform("tomb", 835, 454, 150, 36),
-  ], [
-    point(180, 338, 0), point(450, 268, 1), point(705, 338, 2), point(910, 410, 3), point(560, 470, 4),
-  ], [
-    enemy(320, 452, 210, 520), enemy(710, 320, 650, 825), enemy(900, 395, 835, 986),
-  ]),
-];
-
-const player = {
-  x: 72,
-  y: 422,
-  w: 54,
-  h: 82,
-  vx: 0,
-  vy: 0,
-  facing: 1,
-  grounded: false,
-  invulnerable: 0,
-  walkTime: 0,
+const externalAssets = {
+  rooms: {
+    menu: asset("rooms/menu_main.png"),
+    bedroom: asset("rooms/bedroom_initial.png"),
+    hallway: asset("rooms/hallway_strange.png"),
+    library: asset("rooms/library_enchanted.png"),
+    mirror: asset("rooms/mirror_room.png"),
+    garden: asset("rooms/garden_night.png"),
+    cemetery: asset("rooms/cemetery.png"),
+    party: asset("rooms/halloween_salon.png"),
+  },
+  characters: {
+    idleDown: asset("characters/charlotte_idle_down.png"),
+    idleUp: asset("characters/charlotte_idle_up.png"),
+    idleSide: asset("characters/charlotte_idle_side.png"),
+    walkDown1: asset("characters/charlotte_walk_down_1.png"),
+    walkDown2: asset("characters/charlotte_walk_down_2.png"),
+    walkUp1: asset("characters/charlotte_walk_up_1.png"),
+    walkUp2: asset("characters/charlotte_walk_up_2.png"),
+    walkSide1: asset("characters/charlotte_walk_side_1.png"),
+    walkSide2: asset("characters/charlotte_walk_side_2.png"),
+    interact: asset("characters/charlotte_interact.png"),
+    surprise: asset("characters/charlotte_surprise.png"),
+    holdPackage: asset("characters/charlotte_hold_package.png"),
+    celebrate: asset("characters/charlotte_celebrate.png"),
+  },
+  portraits: {
+    neutral: asset("portraits/charlotte_neutral.png"),
+    surprise: asset("portraits/charlotte_surprise.png"),
+  },
+  objects: {
+    bed: asset("objects/bed.png"),
+    bookshelf: asset("objects/bookshelf.png"),
+    books: asset("objects/open_spellbook.png"),
+    cemeteryGate: asset("objects/cemetery_gate.png"),
+    chair: asset("objects/chair.png"),
+    clothesRack: asset("objects/clothes_hanging.png"),
+    desk: asset("objects/desk.png"),
+    doll: asset("objects/doll.png"),
+    door: asset("objects/door.png"),
+    finalTable: asset("objects/final_table.png"),
+    ghost: asset("objects/ghost.png"),
+    lamp: asset("objects/lamp.png"),
+    makeup: asset("objects/makeup.png"),
+    mirror: asset("objects/mirror_full.png"),
+    moonFlowers: asset("objects/moon_flowers.png"),
+    package: asset("objects/package_glow.png"),
+    painting: asset("objects/haunted_painting.png"),
+    photoCluster: asset("objects/photo_cluster.png"),
+    plant: asset("objects/plant.png"),
+    posterSet: asset("objects/poster_set.png"),
+    plushes: asset("objects/plushes.png"),
+    roundRug: asset("objects/round_rug.png"),
+    shelves: asset("objects/wall_shelves.png"),
+    shadow: asset("objects/shadow.png"),
+    window: asset("objects/window_rain.png"),
+  },
+  ui: {
+    dialogBox: asset("ui/dialog_box.png"),
+    heartEmpty: asset("ui/heart_empty.png"),
+    heartFull: asset("ui/heart_full.png"),
+    inventoryPanel: asset("ui/inventory_panel.png"),
+    inventorySlot: asset("ui/inventory_slot.png"),
+    panel: asset("ui/panel.png"),
+    selector: asset("ui/selector.png"),
+    iconAccessory: asset("ui/icon_accessory.png"),
+    iconBoots: asset("ui/icon_boots.png"),
+    iconCape: asset("ui/icon_cape.png"),
+    iconHat: asset("ui/icon_hat.png"),
+    iconInvitation: asset("ui/icon_invitation.png"),
+    iconKey: asset("ui/icon_key.png"),
+    iconPackage: asset("ui/icon_package.png"),
+    iconWand: asset("ui/icon_wand.png"),
+  },
+  tilesets: {
+    interior: asset("tilesets/interior_room_tileset.png"),
+  },
 };
 
-let levelIndex = 0;
-let collected = new Set();
-let lives = 3;
-let elapsed = 0;
-let started = false;
-let gameMode = "menu";
-let paused = false;
-let won = false;
-let lastTime = performance.now();
-let introTime = 0;
-let endingTime = 0;
-let storyMessage = "";
-let storyMessageTimer = 0;
-let celebrateTimer = 0;
-let particles = [];
-let magicDust = Array.from({ length: 70 }, (_, i) => ({
-  x: (i * 173) % W,
-  y: 70 + ((i * 89) % 400),
-  speed: 8 + (i % 7) * 2,
-  phase: i * 0.7,
-}));
+const sceneAssets = {
+  menu: externalAssets.rooms.menu,
+  bedroom: externalAssets.rooms.bedroom,
+  hallway: externalAssets.rooms.hallway,
+  library: externalAssets.rooms.library,
+  mirror: externalAssets.rooms.mirror,
+  garden: externalAssets.rooms.garden,
+  cemetery: externalAssets.rooms.cemetery,
+  party: externalAssets.rooms.party,
+  bed: externalAssets.objects.bed,
+  painting: externalAssets.objects.painting,
+  books: externalAssets.objects.books,
+  mirrorObject: externalAssets.objects.mirror,
+  moonFlowers: externalAssets.objects.moonFlowers,
+  finalTable: externalAssets.objects.finalTable,
+  door: externalAssets.objects.door,
+};
 
-function createLevel(name, bgName, platforms, items, enemies) {
-  return { name, bg: hd(`Backgrounds/${bgName}.png`), platforms, items, enemies };
+function collectAssetPaths(value, paths = []) {
+  if (typeof value === "string") paths.push(value);
+  else if (Array.isArray(value)) value.forEach((item) => collectAssetPaths(item, paths));
+  else if (value && typeof value === "object") Object.values(value).forEach((item) => collectAssetPaths(item, paths));
+  return paths;
 }
 
-function platform(kind, x, y, w, h) {
-  return { kind, x, y, w, h };
-}
+const costumeOrder = ["hat", "cape", "boots", "wand", "accessory"];
+const inventoryDefs = {
+  invitation: {
+    name: "Invitacion",
+    icon: externalAssets.ui.iconInvitation,
+    description: "Dice: Te esperamos esta noche. La tinta parece moverse sola.",
+  },
+  key: {
+    name: "Llave antigua",
+    icon: externalAssets.ui.iconKey,
+    description: "Una llave fria con una luna grabada. No pertenece a tu casa.",
+  },
+  hat: {
+    name: "Sombrero",
+    icon: externalAssets.ui.iconHat,
+    description: "Un sombrero de bruja ligero, como si recordara a su dueña.",
+  },
+  cape: {
+    name: "Capa",
+    icon: externalAssets.ui.iconCape,
+    description: "La tela brilla cuando una puerta cambia de lugar.",
+  },
+  boots: {
+    name: "Botas",
+    icon: externalAssets.ui.iconBoots,
+    description: "Botines encantados. Perfectos para correr si algo te sigue.",
+  },
+  wand: {
+    name: "Varita",
+    icon: externalAssets.ui.iconWand,
+    description: "Una varita tibia. En la punta hay polvo de estrellas.",
+  },
+  accessory: {
+    name: "Accesorio final",
+    icon: externalAssets.ui.iconAccessory,
+    description: "El broche final del disfraz. Late como un pequeño corazon.",
+  },
+};
 
-function point(x, y, itemType) {
-  return { x, y, itemType };
-}
-
-function enemy(x, y, minX, maxX) {
-  return { x, y, w: 56, h: 56, minX, maxX, vx: 70, phase: Math.random() * Math.PI * 2 };
-}
+const heroSprites = {
+  pajama: externalAssets.characters.idleDown,
+  idle: externalAssets.characters.idleDown,
+  idleUp: externalAssets.characters.idleUp,
+  idleSide: externalAssets.characters.idleSide,
+  walkDown1: externalAssets.characters.walkDown1,
+  walkDown2: externalAssets.characters.walkDown2,
+  walkUp1: externalAssets.characters.walkUp1,
+  walkUp2: externalAssets.characters.walkUp2,
+  walkSide1: externalAssets.characters.walkSide1,
+  walkSide2: externalAssets.characters.walkSide2,
+  interact: externalAssets.characters.interact,
+  surprise: externalAssets.characters.surprise,
+  holdPackage: externalAssets.characters.holdPackage,
+  portrait: externalAssets.portraits.neutral,
+  portraitSurprise: externalAssets.portraits.surprise,
+  pickup: externalAssets.characters.interact,
+  celebrate: externalAssets.characters.celebrate,
+  progress: Array.from({ length: 6 }, () => externalAssets.characters.idleDown),
+};
 
 const imagePaths = [
-  hd("Character/idle.png"),
-  hd("Character/run_1.png"),
-  hd("Character/run_2.png"),
-  hd("Character/jump.png"),
-  hd("Character/fall.png"),
-  asset("Enemies/ghost.png"),
-  asset("Enemies/bat.png"),
-  ...itemCatalog.map((item) => item.asset),
-  ...levels.map((level) => level.bg),
+  PLACEHOLDER_ASSET,
+  ...collectAssetPaths(externalAssets),
+  ...Object.values(heroSprites).flat(),
+  ...Object.values(inventoryDefs).map((item) => item.icon),
+  ...Object.values(sceneAssets),
 ];
+
+const rooms = [
+  {
+    id: "bedroom",
+    name: "Habitacion inicial",
+    bg: sceneAssets.bedroom,
+    spawn: { x: 548, y: 392 },
+    tint: "rgba(45, 22, 64, 0.08)",
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 86 },
+      { x: 0, y: 0, w: 34, h: 576 },
+      { x: 990, y: 0, w: 34, h: 576 },
+      { x: 0, y: 520, w: 1024, h: 56 },
+    ],
+    objects: [
+      {
+        id: "bedroomWindow",
+        label: "mirar ventana",
+        x: 396, y: 78, w: 170, h: 166,
+        sprite: externalAssets.objects.window,
+        action: () => say("Charlotte", "La lluvia golpea suave. Desde aqui la ciudad parece una postal violeta."),
+      },
+      {
+        id: "posterSet",
+        label: "mirar posters",
+        x: 72, y: 94, w: 154, h: 118,
+        sprite: externalAssets.objects.posterSet,
+        action: () => say("Charlotte", "Mis posters favoritos: brujas, estrellas y una banda que Mama dice que suena triste."),
+      },
+      {
+        id: "photoCluster",
+        label: "mirar fotografias",
+        x: 232, y: 88, w: 132, h: 112,
+        sprite: externalAssets.objects.photoCluster,
+        action: () => say("Charlotte", "Fotos con mis amigas, mi primer disfraz y una Polaroid donde salgo tapandome la cara."),
+      },
+      {
+        id: "wallShelves",
+        label: "examinar estanterias",
+        x: 592, y: 72, w: 190, h: 132,
+        sprite: externalAssets.objects.shelves,
+        action: () => say("Charlotte", "Aqui guardo libretas, stickers, mini calabazas y cosas que no se botar."),
+      },
+      {
+        id: "clothesRack",
+        label: "revisar ropa colgada",
+        x: 800, y: 96, w: 150, h: 176,
+        sprite: externalAssets.objects.clothesRack,
+        solid: true,
+        collision: { x: 12, y: 120, w: 126, h: 42 },
+        action: () => say("Charlotte", "Vestidos, chaquetas suaves y demasiados lazos morados para una sola persona."),
+      },
+      {
+        id: "bookshelf",
+        label: "examinar librero",
+        x: 70, y: 222, w: 170, h: 194,
+        sprite: externalAssets.objects.bookshelf,
+        solid: true,
+        collision: { x: 16, y: 96, w: 138, h: 82 },
+        action: () => say("Charlotte", "Novelas de misterio, manga, diarios viejos y un libro que no recuerdo comprar."),
+      },
+      {
+        id: "bed",
+        label: "examinar cama",
+        x: 250, y: 274, w: 260, h: 136,
+        sprite: externalAssets.objects.bed,
+        solid: true,
+        collision: { x: 10, y: 72, w: 238, h: 56 },
+        action: () => say("Charlotte", "Almohadas por todos lados. La manta todavia tiene forma de siesta interrumpida."),
+      },
+      {
+        id: "roundRug",
+        label: "mirar alfombra",
+        x: 376, y: 388, w: 250, h: 106,
+        sprite: externalAssets.objects.roundRug,
+        action: () => say("Charlotte", "La alfombra redonda siempre queda torcida, aunque la acomode todos los dias."),
+      },
+      {
+        id: "desk",
+        label: "examinar escritorio",
+        x: 590, y: 234, w: 224, h: 150,
+        sprite: externalAssets.objects.desk,
+        solid: true,
+        collision: { x: 8, y: 86, w: 208, h: 54 },
+        action: () => say("Charlotte", "Tareas sin terminar, cartas dobladas y una libreta llena de ideas para disfraces."),
+      },
+      {
+        id: "chair",
+        label: "mover silla",
+        x: 650, y: 360, w: 86, h: 100,
+        sprite: externalAssets.objects.chair,
+        solid: true,
+        collision: { x: 12, y: 48, w: 62, h: 40 },
+        action: () => say("Charlotte", "La silla esta ocupada por mi chaqueta. Otra vez."),
+      },
+      {
+        id: "makeup",
+        label: "mirar maquillaje",
+        x: 744, y: 322, w: 94, h: 62,
+        sprite: externalAssets.objects.makeup,
+        action: () => say("Charlotte", "Brillos, rubor rosa y un delineador que solo uso cuando quiero verme valiente."),
+      },
+      {
+        id: "mirror",
+        label: "mirar espejo",
+        x: 836, y: 248, w: 118, h: 172,
+        sprite: externalAssets.objects.mirror,
+        solid: true,
+        collision: { x: 18, y: 118, w: 82, h: 42 },
+        action: () => say("Charlotte", "El espejo devuelve mi reflejo con un segundo de retraso. Eso es nuevo."),
+      },
+      {
+        id: "plantDesk",
+        label: "regar planta",
+        x: 912, y: 390, w: 78, h: 88,
+        sprite: externalAssets.objects.plant,
+        solid: true,
+        collision: { x: 18, y: 52, w: 46, h: 32 },
+        action: () => say("Charlotte", "Se llama Luna. Sobrevivio a mis examenes, asi que es fuerte."),
+      },
+      {
+        id: "plushes",
+        label: "mirar peluches",
+        x: 744, y: 418, w: 118, h: 86,
+        sprite: externalAssets.objects.plushes,
+        action: () => say("Charlotte", "Mis peluches hacen guardia. El conejo de la izquierda sabe demasiadas cosas."),
+      },
+      {
+        id: "package",
+        label: "abrir paquete",
+        x: 478, y: 302, w: 126, h: 102,
+        sprite: externalAssets.objects.package,
+        solid: true,
+        collision: { x: 20, y: 58, w: 86, h: 34 },
+        action: openPackage,
+      },
+      {
+        id: "floorLamp",
+        label: "encender lampara",
+        x: 142, y: 386, w: 82, h: 118,
+        sprite: externalAssets.objects.lamp,
+        solid: true,
+        collision: { x: 24, y: 80, w: 34, h: 24 },
+        action: () => say("Charlotte", "La luz calida hace que todo parezca menos raro. Casi."),
+      },
+      {
+        id: "toHallway",
+        label: "usar puerta",
+        x: 904, y: 170, w: 96, h: 172,
+        sprite: externalAssets.objects.door,
+        action: () => {
+          if (!has("key")) {
+            say("Charlotte", "La puerta no tiene cerradura... pero pide una llave.");
+            return;
+          }
+          changeRoom("hallway", 112, 390);
+          queueDialogue([
+            lineOf("Charlotte", "Esta puerta no estaba aqui hace unos minutos..."),
+            lineOf("Charlotte", "La casa cambio por dentro."),
+          ]);
+        },
+      },
+    ],
+  },
+  {
+    id: "hallway",
+    name: "Pasillo extraño",
+    bg: sceneAssets.hallway,
+    spawn: { x: 120, y: 392 },
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 124 },
+      { x: 0, y: 0, w: 28, h: 576 },
+      { x: 996, y: 0, w: 28, h: 576 },
+      { x: 0, y: 520, w: 1024, h: 56 },
+      { x: 360, y: 250, w: 116, h: 170 },
+      { x: 710, y: 250, w: 120, h: 168 },
+    ],
+    objects: [
+      door("toBedroom", "volver a la habitacion", 58, 246, "bedroom", 860, 392),
+      door("toLibrary", "entrar a biblioteca", 368, 240, "library", 130, 392),
+      door("toMirror", "abrir cuarto de espejos", 715, 240, "mirror", 152, 392),
+      {
+        id: "gardenDoor",
+        label: "abrir puerta del jardin",
+        x: 900, y: 236, w: 72, h: 150,
+        sprite: sceneAssets.door,
+        action: () => {
+          if (!has("wand")) {
+            say("Charlotte", "La puerta esta cubierta por polvo brillante. Necesito algo magico.");
+            return;
+          }
+          changeRoom("garden", 128, 390);
+        },
+      },
+      {
+        id: "painting",
+        label: "examinar cuadro",
+        x: 518, y: 178, w: 100, h: 106,
+        sprite: sceneAssets.painting,
+        action: () => {
+          flags.paintingChanged = true;
+          queueDialogue([
+            lineOf("Charlotte", "El retrato esta sonriendo distinto."),
+            lineOf("Charlotte", "Creo que alguien me esta observando..."),
+          ]);
+        },
+      },
+    ],
+  },
+  {
+    id: "library",
+    name: "Biblioteca encantada",
+    bg: sceneAssets.library,
+    spawn: { x: 130, y: 392 },
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 120 },
+      { x: 0, y: 0, w: 32, h: 576 },
+      { x: 992, y: 0, w: 32, h: 576 },
+      { x: 0, y: 520, w: 1024, h: 56 },
+      { x: 74, y: 150, w: 250, h: 212 },
+      { x: 672, y: 150, w: 250, h: 212 },
+      { x: 426, y: 330, w: 190, h: 80 },
+    ],
+    objects: [
+      door("libraryExit", "salir al pasillo", 52, 242, "hallway", 420, 392),
+      {
+        id: "books",
+        label: "leer libro abierto",
+        x: 420, y: 318, w: 200, h: 92,
+        sprite: sceneAssets.books,
+        action: () => {
+          if (!has("hat")) {
+            giveItem("hat");
+            queueDialogue([
+              lineOf("Charlotte", "El libro dice: Una bruja siempre empieza por su sombrero."),
+              lineOf("Charlotte", "¡Encontré el sombrero de bruja!"),
+            ]);
+          } else {
+            say("Charlotte", "Las paginas ahora estan en blanco.");
+          }
+        },
+      },
+      {
+        id: "doll",
+        label: "hablar con muñeco",
+        x: 748, y: 366, w: 90, h: 92,
+        sprite: externalAssets.objects.doll,
+        action: () => {
+          if (!has("hat")) {
+            say("Muñeco", "La casa solo presta ropa a quien sabe leer sus pistas.");
+            return;
+          }
+          if (!has("cape")) {
+            giveItem("cape");
+            queueDialogue([
+              lineOf("Muñeco", "No corras todavia. Primero aprende a esconderte en la noche."),
+              lineOf("Charlotte", "¡Esta capa combina perfecto!"),
+            ]);
+          } else {
+            say("Muñeco", "Las paredes escuchan menos si caminas despacio.");
+          }
+        },
+      },
+    ],
+  },
+  {
+    id: "mirror",
+    name: "Cuarto de espejos",
+    bg: sceneAssets.mirror,
+    spawn: { x: 150, y: 392 },
+    tint: "rgba(110, 52, 144, 0.18)",
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 122 },
+      { x: 0, y: 0, w: 34, h: 576 },
+      { x: 990, y: 0, w: 34, h: 576 },
+      { x: 0, y: 520, w: 1024, h: 56 },
+      { x: 420, y: 136, w: 184, h: 250 },
+    ],
+    objects: [
+      door("mirrorExit", "volver al pasillo", 64, 244, "hallway", 760, 392),
+      {
+        id: "mirror",
+        label: "examinar espejo",
+        x: 424, y: 136, w: 176, h: 248,
+        sprite: sceneAssets.mirrorObject,
+        action: () => {
+          if (!has("cape")) {
+            say("Charlotte", "El espejo no refleja mi habitacion. Refleja un jardin bajo la lluvia.");
+            return;
+          }
+          if (!has("wand")) {
+            giveItem("wand");
+            flags.mirrorFlash = true;
+            queueDialogue([
+              lineOf("Charlotte", "Mi reflejo me entrego una varita..."),
+              lineOf("Charlotte", "¡Ahora tengo magia!"),
+            ]);
+          } else {
+            say("Charlotte", "Mi reflejo saluda un segundo tarde.");
+          }
+        },
+      },
+    ],
+  },
+  {
+    id: "garden",
+    name: "Jardin nocturno",
+    bg: sceneAssets.garden,
+    spawn: { x: 128, y: 390 },
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 114 },
+      { x: 0, y: 0, w: 28, h: 576 },
+      { x: 996, y: 0, w: 28, h: 576 },
+      { x: 0, y: 518, w: 1024, h: 58 },
+      { x: 120, y: 350, w: 120, h: 104 },
+      { x: 720, y: 340, w: 130, h: 110 },
+    ],
+    objects: [
+      door("gardenExit", "volver al pasillo", 60, 252, "hallway", 920, 392),
+      {
+        id: "sunflowers",
+        label: "activar flores lunares",
+        x: 716, y: 330, w: 150, h: 130,
+        sprite: sceneAssets.moonFlowers,
+        action: () => {
+          if (!has("wand")) {
+            say("Charlotte", "Las flores siguen mi mirada. Tal vez reaccionen a magia.");
+            return;
+          }
+          if (!has("boots")) {
+            giveItem("boots");
+            queueDialogue([
+              lineOf("Charlotte", "Las flores abrieron un compartimiento secreto."),
+              lineOf("Charlotte", "¡Lista para correr por Halloween!"),
+            ]);
+          } else {
+            say("Charlotte", "Las flores susurran: corre solo cuando la sombra despierte.");
+          }
+        },
+      },
+      {
+        id: "cemeteryGate",
+        label: "cruzar reja",
+        x: 912, y: 248, w: 72, h: 150,
+        sprite: sceneAssets.door,
+        action: () => {
+          if (!has("boots")) {
+            say("Charlotte", "El camino esta hundido. Necesito algo para moverme rapido.");
+            return;
+          }
+          changeRoom("cemetery", 126, 390);
+        },
+      },
+    ],
+  },
+  {
+    id: "cemetery",
+    name: "Cementerio",
+    bg: sceneAssets.cemetery,
+    spawn: { x: 126, y: 390 },
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 112 },
+      { x: 0, y: 0, w: 26, h: 576 },
+      { x: 998, y: 0, w: 26, h: 576 },
+      { x: 0, y: 518, w: 1024, h: 58 },
+      { x: 160, y: 292, w: 120, h: 92 },
+      { x: 590, y: 292, w: 130, h: 98 },
+    ],
+    objects: [
+      door("cemeteryBack", "volver al jardin", 54, 248, "garden", 870, 390),
+      {
+        id: "ghost",
+        label: "hablar con fantasma",
+        x: 448, y: 338, w: 92, h: 96,
+        sprite: externalAssets.objects.ghost,
+        action: () => {
+          if (!has("accessory")) {
+            giveItem("accessory");
+            flags.chaseStarted = true;
+            startChase();
+            queueDialogue([
+              lineOf("Fantasma", "Yo solo cuidaba el broche hasta que llegaras."),
+              lineOf("Charlotte", "¡Mi disfraz esta casi completo!"),
+              lineOf("Fantasma", "Ahora corre. La casa tambien lo sabe."),
+            ]);
+          } else {
+            say("Fantasma", "La salida esta al este. No mires atras si la sombra respira.");
+          }
+        },
+      },
+      {
+        id: "partyGate",
+        label: "abrir salida a la fiesta",
+        x: 912, y: 246, w: 76, h: 154,
+        sprite: sceneAssets.door,
+        action: () => {
+          if (costumeCount() < 5) {
+            say("Charlotte", "La puerta espera el disfraz completo.");
+            return;
+          }
+          changeRoom("party", 492, 392);
+          startEnding();
+        },
+      },
+    ],
+  },
+  {
+    id: "party",
+    name: "Salon de Halloween",
+    bg: sceneAssets.party,
+    spawn: { x: 492, y: 392 },
+    walls: [
+      { x: 0, y: 0, w: 1024, h: 116 },
+      { x: 0, y: 0, w: 28, h: 576 },
+      { x: 996, y: 0, w: 28, h: 576 },
+      { x: 0, y: 520, w: 1024, h: 56 },
+    ],
+    objects: [
+      {
+        id: "finalTable",
+        label: "leer tarjeta",
+        x: 430, y: 290, w: 180, h: 118,
+        sprite: sceneAssets.finalTable,
+        action: () => say("Moon Parcel", "Gracias por completar la entrega. La fiesta empieza cuando encuentras tu propia luz."),
+      },
+    ],
+  },
+];
+
+const state = {
+  room: "bedroom",
+  player: { x: 548, y: 392, w: 44, h: 62, facing: "down", walk: 0 },
+  lives: 3,
+  elapsed: 0,
+  started: false,
+  paused: false,
+  inventoryOpen: false,
+  selectedInventory: 0,
+  dialogue: [],
+  currentLine: null,
+  inventory: new Set(),
+  flags: {},
+  chase: null,
+  ending: false,
+  eventFlash: 0,
+  saveFlash: 0,
+};
+
+const flags = state.flags;
+let lastTime = performance.now();
+let menuTime = 0;
+let particles = [];
+const rain = Array.from({ length: 58 }, (_, i) => ({ x: (i * 87) % W, y: (i * 43) % H, s: 160 + (i % 4) * 28 }));
+const motes = Array.from({ length: 70 }, (_, i) => ({ x: (i * 137) % W, y: 60 + ((i * 71) % 430), phase: i * 0.73 }));
+
+function lineOf(speaker, text) {
+  return { speaker, text };
+}
+
+function room() {
+  return rooms.find((r) => r.id === state.room);
+}
+
+function has(item) {
+  return state.inventory.has(item);
+}
+
+function costumeCount() {
+  return costumeOrder.filter((item) => has(item)).length;
+}
+
+function giveItem(item) {
+  state.inventory.add(item);
+  burst(state.player.x + 24, state.player.y - 28, "#ffd36b", 16);
+  updateHud();
+  saveGame();
+}
+
+function queueDialogue(lines) {
+  state.dialogue.push(...lines);
+  if (!state.currentLine) nextDialogue();
+}
+
+function say(speaker, text) {
+  queueDialogue([lineOf(speaker, text)]);
+}
+
+function nextDialogue() {
+  state.currentLine = state.dialogue.shift() || null;
+}
+
+function openPackage() {
+  if (flags.packageOpen) {
+    say("Charlotte", "La caja sigue tibia. Dentro solo queda polvo dorado.");
+    return;
+  }
+  flags.packageOpen = true;
+  giveItem("invitation");
+  giveItem("key");
+  saveGame();
+  queueDialogue([
+    lineOf("Charlotte", "Mi paquete Moon Parcel llego... ¿por que la caja esta brillando?"),
+    lineOf("Charlotte", "Hay una invitacion: Te esperamos esta noche."),
+    lineOf("Charlotte", "Y una llave antigua. No recuerdo haber pedido esto."),
+  ]);
+}
+
+function door(id, label, x, y, target, spawnX, spawnY) {
+  return {
+    id,
+    label,
+    x, y, w: 82, h: 150,
+    sprite: sceneAssets.door,
+    action: () => changeRoom(target, spawnX, spawnY),
+  };
+}
+
+function changeRoom(id, x, y) {
+  state.room = id;
+  state.player.x = x;
+  state.player.y = y;
+  state.player.walk = 0;
+  state.inventoryOpen = false;
+  updateHud();
+  saveGame();
+}
+
+function saveGame({ flash = true } = {}) {
+  if (!state.started) return;
+  const payload = {
+    room: state.room,
+    player: {
+      x: state.player.x,
+      y: state.player.y,
+      facing: state.player.facing,
+    },
+    lives: state.lives,
+    elapsed: state.elapsed,
+    inventory: [...state.inventory],
+    flags: { ...state.flags },
+    chase: state.chase ? { ...state.chase } : null,
+    ending: state.ending,
+    savedAt: Date.now(),
+  };
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+    if (flash) state.saveFlash = 1.8;
+    refreshContinueButton();
+  } catch {
+    state.saveFlash = 0;
+  }
+}
+
+function readSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const save = JSON.parse(raw);
+    if (!rooms.some((r) => r.id === save.room)) return null;
+    return save;
+  } catch {
+    return null;
+  }
+}
+
+function loadGame() {
+  const save = readSave();
+  if (!save) {
+    setMenuCopy("Guardado", "Halloween Delivery", "Aun no hay partida guardada. La casa espera que abras el paquete por primera vez.");
+    refreshContinueButton();
+    return;
+  }
+
+  state.started = true;
+  document.body.classList.remove("menu-mode");
+  overlay.hidden = true;
+  state.paused = false;
+  state.inventoryOpen = false;
+  state.dialogue = [];
+  state.currentLine = null;
+  state.room = save.room;
+  state.player.x = Number(save.player?.x) || room().spawn.x;
+  state.player.y = Number(save.player?.y) || room().spawn.y;
+  state.player.facing = save.player?.facing || "down";
+  state.player.walk = 0;
+  state.lives = Math.max(1, Math.min(3, Number(save.lives) || 3));
+  state.elapsed = Math.max(0, Number(save.elapsed) || 0);
+  state.inventory = new Set((save.inventory || []).filter((item) => inventoryDefs[item]));
+  Object.keys(flags).forEach((key) => delete flags[key]);
+  Object.assign(flags, save.flags || {});
+  state.chase = save.chase || (flags.chaseStarted && state.room === "cemetery" ? { x: 220, y: 180, speed: 92, active: true } : null);
+  state.ending = Boolean(save.ending);
+  state.saveFlash = 1.8;
+  updateHud();
+}
+
+function clearSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+    // Ignored: some embedded browsers can block storage.
+  }
+  refreshContinueButton();
+}
+
+function refreshContinueButton() {
+  continueBtn.disabled = !readSave();
+}
+
+function setMenuCopy(badge, title, text) {
+  overlay.querySelector(".moon-badge").textContent = badge;
+  overlay.querySelector("h1").textContent = title;
+  overlay.querySelector("p").textContent = text;
+}
+
+function startChase() {
+  state.chase = { x: 220, y: 180, speed: 92, active: true };
+  saveGame();
+}
+
+function startEnding() {
+  state.ending = true;
+  state.chase = null;
+  saveGame();
+  queueDialogue([
+    lineOf("Charlotte", "El disfraz esta completo..."),
+    lineOf("Moon Parcel", "La casa nunca quiso atraparte. Queria asegurarse de que llegaras lista."),
+    lineOf("Charlotte", "Entonces... ¿esta era mi invitacion a la fiesta?"),
+    lineOf("Moon Parcel", "Feliz Halloween, Charlotte."),
+  ]);
+}
 
 function loadImages() {
   return Promise.all([...new Set(imagePaths)].map((path) => new Promise((resolve) => {
     const img = new Image();
-    img.onload = resolve;
-    img.onerror = resolve;
+    img.onload = () => resolve();
+    img.onerror = () => {
+      missingAssets.add(path);
+      resolve();
+    };
     img.src = encodeURI(path);
     images.set(path, img);
   })));
@@ -159,424 +842,736 @@ function loadImages() {
 
 function resizeCanvas() {
   const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-  canvas.width = Math.round(W * dpr);
-  canvas.height = Math.round(H * dpr);
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
 }
 
-function resetPlayer() {
-  player.x = 72;
-  player.y = 422;
-  player.vx = 0;
-  player.vy = 0;
-  player.grounded = false;
-  player.invulnerable = 1.0;
-}
+function update(dt) {
+  if (!state.started) {
+    menuTime += dt;
+    updateAtmosphere(dt);
+    updateParticles(dt);
+    return;
+  }
+  if (!state.started || state.paused || state.currentLine || state.inventoryOpen || state.ending) {
+    updateAtmosphere(dt);
+    updateParticles(dt);
+    return;
+  }
+  state.elapsed += dt;
+  const p = state.player;
+  const speed = state.chase ? 216 : 172;
+  const dx = (keys.has("ArrowRight") || keys.has("KeyD") ? 1 : 0) - (keys.has("ArrowLeft") || keys.has("KeyA") ? 1 : 0);
+  const dy = (keys.has("ArrowDown") || keys.has("KeyS") ? 1 : 0) - (keys.has("ArrowUp") || keys.has("KeyW") ? 1 : 0);
+  if (dx || dy) {
+    const len = Math.hypot(dx, dy);
+    movePlayer((dx / len) * speed * dt, 0);
+    movePlayer(0, (dy / len) * speed * dt);
+    p.facing = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up");
+    p.walk += dt;
+  }
 
-function resetLevel(keepLives = false) {
-  const level = levels[levelIndex];
-  collected = new Set();
-  lives = keepLives ? lives : 3;
-  elapsed = 0;
-  won = false;
-  paused = false;
-  level.enemies.forEach((e, i) => {
-    e.x = e.minX + (i + 1) * 30;
-    e.vx = Math.abs(e.vx);
-  });
-  resetPlayer();
+  if (state.chase?.active) updateChase(dt);
+  updateAtmosphere(dt);
+  updateParticles(dt);
   updateHud();
 }
 
-function startIntro() {
-  gameMode = "intro";
-  started = true;
-  won = false;
-  paused = false;
-  introTime = 0;
-  particles = [];
-  overlay.hidden = true;
+function movePlayer(dx, dy) {
+  const p = state.player;
+  p.x += dx;
+  p.y += dy;
+  const bounds = playerHitbox();
+  const blockers = [
+    ...room().walls,
+    ...room().objects.filter((obj) => obj.solid && !obj.hidden?.()).map(objectCollisionBox),
+  ];
+  for (const wall of blockers) {
+    if (overlap(bounds, wall)) {
+      p.x -= dx;
+      p.y -= dy;
+      return;
+    }
+  }
 }
 
-function beginGameplay() {
-  gameMode = "play";
-  introTime = 0;
-  resetLevel(false);
+function playerHitbox() {
+  const p = state.player;
+  return { x: p.x + 11, y: p.y + 34, w: p.w - 22, h: p.h - 8 };
 }
 
-function updateHud() {
-  const level = levels[levelIndex];
-  levelNameEl.textContent = `${levelIndex + 1}. ${level.name}`;
-  itemsEl.textContent = `${collected.size}/${level.items.length}`;
-  livesEl.textContent = "♥".repeat(lives) + "♡".repeat(Math.max(0, 3 - lives));
-  timeEl.textContent = String(Math.floor(elapsed));
-  itemIconsEl.innerHTML = itemCatalog.map((item, index) => `
-    <span class="item-icon ${hasCollectedType(index) ? "collected" : ""}" title="${item.name}">
-      <img src="${item.asset}" alt="${item.name}">
-    </span>
-  `).join("");
+function objectBox(obj) {
+  return { x: obj.x, y: obj.y, w: obj.w, h: obj.h };
 }
 
-function hasCollectedType(type) {
-  return [...collected].some((itemIndex) => levels[levelIndex].items[itemIndex]?.itemType === type);
+function objectCollisionBox(obj) {
+  if (!obj.collision) return objectBox(obj);
+  return {
+    x: obj.x + obj.collision.x,
+    y: obj.y + obj.collision.y,
+    w: obj.collision.w,
+    h: obj.collision.h,
+  };
 }
 
-function rectsOverlap(a, b) {
+function overlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-function horizontalOverlap(a, b, padding = 0) {
-  return a.x + a.w > b.x + padding && a.x < b.x + b.w - padding;
-}
-
-function findLandingPlatform(previousBottom, currentBottom) {
+function nearestObject() {
+  const p = state.player;
+  const center = { x: p.x + p.w / 2, y: p.y + p.h / 2 };
   let best = null;
-  for (const p of levels[levelIndex].platforms) {
-    if (!horizontalOverlap(player, p, 4)) continue;
-    if (previousBottom <= p.y + 16 && currentBottom >= p.y) {
-      if (!best || p.y < best.y) best = p;
-    }
+  for (const obj of room().objects) {
+    if (obj.hidden?.()) continue;
+    const ox = obj.x + obj.w / 2;
+    const oy = obj.y + obj.h / 2;
+    const dist = Math.hypot(center.x - ox, center.y - oy);
+    if (dist < 112 && (!best || dist < best.dist)) best = { obj, dist };
   }
-  return best;
+  return best?.obj || null;
 }
 
-function step(dt) {
-  if (gameMode === "intro") {
-    introTime += dt;
-    particles = particles
-      .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt }))
-      .filter((p) => p.life > 0);
-    if (introTime > 7.2 || keys.has("Enter") || keys.has("Space")) beginGameplay();
-    return;
-  }
-
-  if (gameMode === "ending") {
-    endingTime += dt;
-    if (Math.floor(endingTime * 10) % 5 === 0) {
-      burst(500 + Math.sin(endingTime * 2) * 130, 260 + Math.cos(endingTime * 3) * 55, "#ffd36b", 2);
+function updateChase(dt) {
+  if (state.room !== "cemetery") return;
+  const c = state.chase;
+  const p = state.player;
+  const targetX = p.x + p.w / 2;
+  const targetY = p.y + p.h / 2;
+  const dx = targetX - c.x;
+  const dy = targetY - c.y;
+  const len = Math.hypot(dx, dy) || 1;
+  c.x += (dx / len) * c.speed * dt;
+  c.y += (dy / len) * c.speed * dt;
+  if (Math.hypot(targetX - c.x, targetY - c.y) < 34) {
+    state.lives -= 1;
+    burst(p.x + 22, p.y + 18, "#ff5f8d", 18);
+    if (state.lives <= 0) {
+      state.lives = 3;
+      state.inventory.delete("accessory");
+      flags.chaseStarted = false;
+      state.chase = null;
+      changeRoom("cemetery", 126, 390);
+      say("Charlotte", "Desperte junto a la reja... el broche volvio a esconderse.");
+    } else {
+      changeRoom("cemetery", 126, 390);
+      c.x = 220;
+      c.y = 180;
+      say("Charlotte", "La sombra me alcanzo. Tengo que llegar a la salida.");
     }
-    particles = particles
-      .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt, vy: p.vy + 90 * dt }))
-      .filter((p) => p.life > 0);
-    if (endingTime > 2.0 && (keys.has("Enter") || keys.has("Space"))) continueAfterEnding();
-    return;
   }
+}
 
-  if (!started || paused || won || gameMode !== "play") return;
-  elapsed += dt;
-  player.invulnerable = Math.max(0, player.invulnerable - dt);
-  storyMessageTimer = Math.max(0, storyMessageTimer - dt);
-  celebrateTimer = Math.max(0, celebrateTimer - dt);
+function updateAtmosphere(dt) {
+  for (const drop of rain) drop.y = (drop.y + drop.s * dt) % (H + 30);
+  state.eventFlash = Math.max(0, state.eventFlash - dt);
+  state.saveFlash = Math.max(0, state.saveFlash - dt);
+}
 
-  const left = keys.has("ArrowLeft") || keys.has("KeyA");
-  const right = keys.has("ArrowRight") || keys.has("KeyD");
-  const fastFall = keys.has("ArrowDown") || keys.has("KeyS");
-  const speed = 310;
-  player.vx = (right ? speed : 0) - (left ? speed : 0);
-  if (player.vx !== 0) player.facing = Math.sign(player.vx);
-
-  const previousBottom = player.y + player.h;
-  if (fastFall && !player.grounded) player.vy += 900 * dt;
-  player.vy = Math.min(maxFallSpeed, player.vy + gravity * dt);
-  player.x += player.vx * dt;
-  player.y += player.vy * dt;
-  player.x = Math.max(0, Math.min(W - player.w, player.x));
-  player.grounded = false;
-
-  const platform = player.vy >= 0 ? findLandingPlatform(previousBottom, player.y + player.h) : null;
-  if (platform) {
-    player.y = platform.y - player.h;
-    player.vy = 0;
-    player.grounded = true;
-  }
-
-  if (player.y > H + 80) damagePlayer();
-
-  const level = levels[levelIndex];
-  level.enemies.forEach((enemy) => {
-    enemy.phase += dt * 4;
-    enemy.x += enemy.vx * dt;
-    if (enemy.x < enemy.minX || enemy.x > enemy.maxX) {
-      enemy.vx *= -1;
-      enemy.x = Math.max(enemy.minX, Math.min(enemy.maxX, enemy.x));
-    }
-    const hitbox = { x: enemy.x + 8, y: enemy.y + 8, w: enemy.w - 16, h: enemy.h - 14 };
-    if (rectsOverlap(player, hitbox) && player.invulnerable <= 0) damagePlayer();
-  });
-
-  level.items.forEach((item, index) => {
-    if (collected.has(index)) return;
-    const itemBox = { x: item.x - 24, y: item.y - 24, w: 48, h: 48 };
-    if (rectsOverlap(player, itemBox)) {
-      collected.add(index);
-      burst(item.x, item.y, "#ffd36b", 18);
-      storyMessage = itemCatalog[item.itemType].message;
-      storyMessageTimer = 2.8;
-      celebrateTimer = 0.65;
-      updateHud();
-    }
-  });
-
+function updateParticles(dt) {
   particles = particles
-    .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt, vy: p.vy + 220 * dt }))
+    .map((p) => ({ ...p, life: p.life - dt, x: p.x + p.vx * dt, y: p.y + p.vy * dt }))
     .filter((p) => p.life > 0);
-
-  if (collected.size === level.items.length) completeLevel();
-  player.walkTime += dt;
-  updateHud();
-}
-
-function damagePlayer() {
-  lives -= 1;
-  burst(player.x + player.w / 2, player.y + player.h / 2, "#ff7aa8", 14);
-  if (lives <= 0) {
-    resetLevel(false);
-  } else {
-    resetPlayer();
-    updateHud();
-  }
-}
-
-function completeLevel() {
-  won = true;
-  gameMode = "ending";
-  endingTime = 0;
-  player.vx = 0;
-  player.vy = 0;
-  burst(player.x + player.w / 2, player.y + 10, "#ffd36b", 28);
-}
-
-function continueAfterEnding() {
-  if (levelIndex < levels.length - 1) levelIndex += 1;
-  else levelIndex = 0;
-  beginGameplay();
 }
 
 function burst(x, y, color, count) {
   for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * (70 + (i % 4) * 30),
-      vy: Math.sin(angle) * (70 + (i % 3) * 26),
-      color,
-      life: 0.55 + (i % 4) * 0.08,
-    });
+    const a = (Math.PI * 2 * i) / count;
+    particles.push({ x, y, vx: Math.cos(a) * (50 + (i % 3) * 28), vy: Math.sin(a) * (50 + (i % 4) * 20), color, life: 0.45 + (i % 3) * 0.12 });
   }
 }
 
-function drawImage(path, x, y, w, h, flip = false) {
-  const img = images.get(path);
-  if (!img || !img.complete || img.naturalWidth === 0) return false;
-  ctx.save();
-  if (flip) {
-    ctx.translate(x + w, y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(img, 0, 0, w, h);
-  } else {
-    ctx.drawImage(img, x, y, w, h);
+function interact() {
+  if (state.currentLine) {
+    nextDialogue();
+    return;
   }
-  ctx.restore();
-  return true;
+  if (state.inventoryOpen) {
+    examineSelectedItem();
+    return;
+  }
+  const obj = nearestObject();
+  if (obj) obj.action();
+  else say("Charlotte", "No hay nada especial aqui... salvo que la casa respira bajito.");
 }
 
-function drawCoverImage(path, x, y, w, h, focusY = 0.5) {
-  const img = images.get(path);
-  if (!img || !img.complete || img.naturalWidth === 0) return false;
-  const sourceRatio = img.naturalWidth / img.naturalHeight;
-  const targetRatio = w / h;
-  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-  if (sourceRatio > targetRatio) {
-    sw = img.naturalHeight * targetRatio;
-    sx = (img.naturalWidth - sw) / 2;
-  } else {
-    sh = img.naturalWidth / targetRatio;
-    sy = Math.max(0, Math.min(img.naturalHeight - sh, (img.naturalHeight - sh) * focusY));
+function examineSelectedItem() {
+  const items = [...state.inventory];
+  if (!items.length) {
+    say("Charlotte", "Mi inventario esta vacio.");
+    state.inventoryOpen = false;
+    return;
   }
-  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-  return true;
+  const item = items[state.selectedInventory % items.length];
+  state.inventoryOpen = false;
+  say(inventoryDefs[item].name, inventoryDefs[item].description);
+}
+
+function updateHud() {
+  levelNameEl.textContent = room().name;
+  itemsEl.textContent = `${costumeCount()}/5`;
+  livesEl.innerHTML = Array.from({ length: 3 }, (_, i) => {
+    const src = i < state.lives ? externalAssets.ui.heartFull : externalAssets.ui.heartEmpty;
+    return `<img class="heart" src="${src}" alt="${i < state.lives ? "vida" : "sin vida"}" onerror="this.src='${PLACEHOLDER_ASSET}'">`;
+  }).join("");
+  timeEl.textContent = String(Math.floor(state.elapsed));
+  objectiveEl.textContent = currentObjective();
+  itemIconsEl.innerHTML = Object.entries(inventoryDefs)
+    .map(([id, item]) => `<span class="item-icon ${has(id) ? "collected" : ""}" title="${item.name}"><img src="${item.icon}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_ASSET}'"></span>`)
+    .join("");
+}
+
+function currentObjective() {
+  if (!state.started) return "Explora la casa viva, examina objetos con E y descubre por que Moon Parcel te eligio.";
+  if (state.ending) return "Llegaste a la fiesta. Habla con Moon Parcel y disfruta tu disfraz completo.";
+  if (!flags.packageOpen) return "Abre el paquete brillante en tu habitacion.";
+  if (!has("hat")) return "Busca una pista en la biblioteca. El sombrero es la primera pieza.";
+  if (!has("cape")) return "Habla con el muneco de la biblioteca para conseguir la capa.";
+  if (!has("wand")) return "Ve al cuarto de espejos y examina el reflejo.";
+  if (!has("boots")) return "Usa la varita en las flores lunares del jardin.";
+  if (!has("accessory")) return "Cruza al cementerio y habla con el fantasma que cuida el broche.";
+  if (state.chase?.active) return "Corre a la puerta este del cementerio antes de que la sombra te alcance.";
+  return "Abre la salida hacia el salon de Halloween.";
 }
 
 function render() {
-  const level = levels[levelIndex];
   ctx.clearRect(0, 0, W, H);
-
-  if (gameMode === "intro") {
-    drawIntroScene();
+  if (!state.started) {
+    drawMainMenuScene();
     drawParticles();
     return;
   }
-
-  if (gameMode === "ending") {
-    drawEndingScene();
-    drawParticles();
-    return;
-  }
-
-  drawCoverImage(level.bg, 0, 0, W, H, 0.47);
-  drawParallaxAndAtmosphere();
-
-  level.platforms.forEach(drawPlatform);
-  level.items.forEach((item, index) => {
-    if (!collected.has(index)) drawCollectible(item, index);
-  });
-  level.enemies.forEach(drawEnemy);
-  drawGate();
-  drawMara();
+  drawRoom();
+  drawObjects();
+  drawChase();
+  drawPlayer();
+  drawAtmosphere();
   drawParticles();
-  drawStoryBubble();
-  drawCanvasHud();
-
-  if (paused) {
-    ctx.fillStyle = "rgba(8, 5, 14, 0.72)";
-    ctx.fillRect(0, 0, W, H);
-    drawPixelText("PAUSA", W / 2 - 78, H / 2, 42, "#ffd36b");
-  }
+  drawMiniMap();
+  drawSaveNotice();
+  drawInteractionPrompt();
+  drawInventory();
+  drawDialogue();
+  drawPause();
+  drawEndingSparkles();
 }
 
-function drawIntroScene() {
-  const t = introTime;
+function drawMainMenuScene() {
+  const t = menuTime;
   ctx.save();
-  const wall = ctx.createLinearGradient(0, 0, 0, H);
-  wall.addColorStop(0, "#170d2a");
-  wall.addColorStop(1, "#3a1841");
-  ctx.fillStyle = wall;
-  ctx.fillRect(0, 0, W, H);
+  drawImage(sceneAssets.menu, 0, 0, W, H, false, "cover");
+  drawMenuCharlotte(t);
+  drawMenuWeather(t);
+  ctx.restore();
+}
 
-  ctx.fillStyle = "#241235";
-  ctx.fillRect(0, 420, W, 156);
-  ctx.fillStyle = "#4a2554";
-  for (let x = 0; x < W; x += 80) ctx.fillRect(x, 420, 42, 156);
-
-  ctx.fillStyle = "#0c0920";
-  ctx.beginPath();
-  ctx.roundRect(640, 66, 280, 250, 16);
-  ctx.fill();
-  ctx.strokeStyle = "#b86bf4";
-  ctx.lineWidth = 6;
-  ctx.stroke();
+function drawMenuMoon(t) {
+  ctx.save();
   ctx.fillStyle = "#ffd36b";
+  ctx.globalAlpha = 0.9;
   ctx.beginPath();
-  ctx.arc(812, 132, 44, 0, Math.PI * 2);
+  ctx.arc(764, 86, 56, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#0c0920";
+  ctx.fillStyle = "#09071a";
   ctx.beginPath();
-  ctx.arc(832, 118, 40, 0, Math.PI * 2);
+  ctx.arc(788, 70, 55, 0, Math.PI * 2);
   ctx.fill();
-  drawBat(700 + Math.sin(t * 2) * 20, 158, 1);
-  drawBat(855 - Math.sin(t * 2.2) * 18, 204, 0.75);
-
-  ctx.fillStyle = "#5b2f67";
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = "#fff2c7";
   ctx.beginPath();
-  ctx.roundRect(70, 360, 380, 80, 12);
+  ctx.arc(760, 90, 88 + Math.sin(t) * 4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#ffb8f4";
-  ctx.fillRect(92, 372, 336, 8);
-
-  const worry = t > 2.1;
-  drawPajamaMara(170 + Math.sin(t * 2) * 2, 242, worry);
-  ctx.fillStyle = "#f39a43";
-  drawTinyPumpkin(104, 346);
-  drawTinyPumpkin(410, 344);
-
-  if (t > 1.0) drawDialogueBox("¡Es Halloween y aún no tengo mi disfraz!", 88, 64, 510);
-  if (t > 3.5) drawDialogueBox("Ayúdame a encontrar todas las piezas antes de que termine la noche.", 92, 145, 560);
-  if (t > 5.6) drawPixelText("Presiona ESPACIO para empezar", 330, 530, 20, "#ffd36b");
   ctx.restore();
 }
 
-function drawPajamaMara(x, y, worry) {
+function drawMenuForest(t) {
   ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,.45)";
-  ctx.shadowBlur = 10;
-  ctx.strokeStyle = "#ffd4f0";
-  ctx.lineWidth = 3;
-  ctx.fillStyle = "#2a142a";
-  ctx.beginPath();
-  ctx.ellipse(x + 42, y + 50, 44, 50, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#ffc0b5";
-  ctx.beginPath();
-  ctx.arc(x + 46, y + 55, 31, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#ff9ed4";
-  ctx.beginPath();
-  ctx.roundRect(x + 16, y + 93, 58, 86, 14);
-  ctx.fill();
-  ctx.stroke();
-  ctx.strokeStyle = "#ffc0b5";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(x + 22, y + 112);
-  ctx.lineTo(x - 8, y + 142);
-  ctx.moveTo(x + 70, y + 112);
-  ctx.lineTo(x + 102, y + 125);
-  ctx.moveTo(x + 34, y + 178);
-  ctx.lineTo(x + 24, y + 228);
-  ctx.moveTo(x + 58, y + 178);
-  ctx.lineTo(x + 68, y + 228);
-  ctx.stroke();
-  ctx.fillStyle = "#fff4fa";
-  ctx.beginPath();
-  ctx.arc(x + 34, y + 55, 5, 0, Math.PI * 2);
-  ctx.arc(x + 58, y + 55, 5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#8b3765";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  if (worry) ctx.arc(x + 46, y + 76, 9, Math.PI + 0.2, Math.PI * 2 - 0.2);
-  else ctx.arc(x + 46, y + 70, 9, 0.1, Math.PI - 0.1);
-  ctx.stroke();
-  if (worry) {
-    drawPixelText("!", x + 94, y + 34, 34, "#ffd36b");
-  }
-  ctx.restore();
-}
-
-function drawEndingScene() {
-  const t = endingTime;
-  drawCoverImage(levels[levelIndex].bg, 0, 0, W, H, 0.47);
-  ctx.fillStyle = "rgba(14, 6, 24, 0.38)";
-  ctx.fillRect(0, 0, W, H);
   for (let i = 0; i < 12; i++) {
-    drawTinyPumpkin(70 + i * 82, 500 + Math.sin(t * 2 + i) * 5);
+    const x = i * 94 - 34;
+    const sway = Math.sin(t * 0.8 + i) * 5;
+    ctx.strokeStyle = i % 2 ? "#10091f" : "#160d27";
+    ctx.lineWidth = 14 + (i % 3) * 4;
+    ctx.beginPath();
+    ctx.moveTo(x, H);
+    ctx.quadraticCurveTo(x + 34 + sway, 300, x + 12, 140);
+    ctx.stroke();
+    ctx.lineWidth = 5;
+    for (let j = 0; j < 3; j++) {
+      ctx.beginPath();
+      ctx.moveTo(x + 14 + sway, 220 + j * 42);
+      ctx.lineTo(x + (j % 2 ? -42 : 52) + sway, 164 + j * 28);
+      ctx.stroke();
+    }
   }
-  const bounce = Math.sin(t * 8) * 8;
-  drawImage(hd("Character/idle.png"), 430, 210 + bounce, 150, 215);
-  itemCatalog.forEach((item, i) => {
-    const angle = t * 0.8 + i * (Math.PI * 2 / itemCatalog.length);
-    drawImage(item.asset, 505 + Math.cos(angle) * 145 - 24, 300 + Math.sin(angle) * 70 - 24, 48, 48);
-  });
-  drawDialogueBox("¡Felicidades! Has conseguido todos los ítems para tu disfraz.", 195, 70, 640);
-  drawDialogueBox("¡Feliz Halloween!", 352, 148, 320);
-  if (t > 2.2) drawPixelText("Presiona ESPACIO para continuar", 320, 520, 21, "#ffd36b");
+  ctx.restore();
 }
 
-function drawDialogueBox(text, x, y, w) {
+function drawMenuHouse(t) {
   ctx.save();
-  const lines = wrapText(text, w - 36, 18);
-  const h = 34 + lines.length * 24;
-  ctx.fillStyle = "rgba(20, 9, 31, 0.9)";
-  ctx.strokeStyle = "#d978f5";
+  const x = 540;
+  const y = 150;
+  ctx.fillStyle = "#120815";
+  ctx.fillRect(x + 20, y + 158, 314, 220);
+  ctx.fillStyle = "#241336";
+  ctx.fillRect(x + 44, y + 120, 268, 258);
+  ctx.strokeStyle = "#a86cf1";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(x + 44, y + 120, 268, 258);
+  ctx.fillStyle = "#1a102b";
+  ctx.fillRect(x + 106, y + 48, 144, 108);
+  ctx.strokeRect(x + 106, y + 48, 144, 108);
+  ctx.fillStyle = "#120815";
+  triangle(x + 24, y + 122, x + 178, y + 20, x + 334, y + 122);
+  triangle(x + 82, y + 48, x + 178, y - 12, x + 276, y + 48);
+  ctx.strokeStyle = "#f29ad7";
   ctx.lineWidth = 3;
+  linePath([[x + 24, y + 122], [x + 178, y + 20], [x + 334, y + 122]]);
+  linePath([[x + 82, y + 48], [x + 178, y - 12], [x + 276, y + 48]]);
+
+  drawMenuWindow(x + 74, y + 158, t, 0);
+  drawMenuWindow(x + 224, y + 158, t, 1);
+  drawMenuWindow(x + 148, y + 82, t, 2);
+  drawMenuDoor(x + 146, y + 282);
+  ctx.restore();
+}
+
+function drawMenuWindow(x, y, t, id) {
+  const phase = (t + id * 2.4) % 9;
+  const lit = phase < 4.8 || (id === 1 && t > 7 && t < 10);
+  ctx.fillStyle = "#120815";
+  ctx.fillRect(x, y, 52, 72);
+  ctx.strokeStyle = "#f29ad7";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x, y, 52, 72);
+  ctx.fillStyle = lit ? "#d68a52" : "#202f66";
+  ctx.globalAlpha = lit ? 0.92 + Math.sin(t * 5 + id) * 0.07 : 0.55;
+  ctx.fillRect(x + 8, y + 10, 36, 52);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = "#ffc0dc";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.roundRect(x, y, w, h, 10);
-  ctx.fill();
+  ctx.moveTo(x + 26, y + 10);
+  ctx.lineTo(x + 26, y + 62);
+  ctx.moveTo(x + 8, y + 36);
+  ctx.lineTo(x + 44, y + 36);
   ctx.stroke();
-  lines.forEach((line, index) => drawPixelText(line, x + 18, y + 34 + index * 24, 18, "#fff0fb"));
+}
+
+function drawMenuDoor(x, y) {
+  ctx.fillStyle = "#170d27";
+  ctx.fillRect(x, y, 74, 96);
+  ctx.strokeStyle = "#f29ad7";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(x, y, 74, 96);
+  ctx.fillStyle = "#ffd36b";
+  ctx.fillRect(x + 54, y + 48, 6, 6);
+}
+
+function drawMenuFenceAndLamps(t) {
+  ctx.save();
+  ctx.strokeStyle = "#120815";
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.moveTo(0, 400);
+  ctx.lineTo(W, 382);
+  ctx.stroke();
+  for (let x = -10; x < W + 20; x += 48) {
+    ctx.fillStyle = "#120815";
+    ctx.fillRect(x, 360, 8, 96);
+    triangle(x - 5, 360, x + 4, 344, x + 13, 360);
+  }
+  [130, 430, 884].forEach((x, i) => drawMenuLamp(x, 316 + Math.sin(t + i) * 3, t + i));
+  ctx.restore();
+}
+
+function drawMenuLamp(x, y, t) {
+  ctx.fillStyle = "#120815";
+  ctx.fillRect(x - 5, y + 52, 10, 100);
+  ctx.fillRect(x - 22, y + 40, 44, 12);
+  ctx.strokeStyle = "#ffd36b";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x - 16, y, 32, 42);
+  ctx.fillStyle = "#d68a52";
+  ctx.globalAlpha = 0.65 + Math.sin(t * 6) * 0.15;
+  ctx.fillRect(x - 9, y + 8, 18, 26);
+  ctx.globalAlpha = 0.18;
+  ctx.beginPath();
+  ctx.arc(x, y + 22, 48, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawMenuForeground(t) {
+  ctx.save();
+  ctx.fillStyle = "#151020";
+  ctx.fillRect(0, 448, W, 128);
+  ctx.fillStyle = "rgba(247, 191, 210, 0.16)";
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.ellipse(((t * 18 + i * 260) % 1200) - 80, 472 + i * 12, 170, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  for (let i = 0; i < 22; i++) {
+    const x = (i * 57 + Math.sin(t + i) * 4) % W;
+    const y = 488 + (i % 4) * 20;
+    ctx.fillStyle = i % 3 ? "#3d2063" : "#4b263a";
+    ctx.fillRect(x, y, 28, 10);
+    if (i % 7 === 0) {
+      ctx.fillStyle = "#b06451";
+      ctx.fillRect(x + 4, y - 18, 22, 18);
+      ctx.fillStyle = "#d68a52";
+      ctx.fillRect(x + 10, y - 10, 6, 5);
+    }
+  }
+  ctx.restore();
+}
+
+function drawMenuCharlotte(t) {
+  const breathe = Math.sin(t * 2) * 3;
+  const lookDown = Math.floor(t % 7) === 5;
+  const blink = Math.floor((t * 2.6) % 9) === 0;
+  drawImage(heroSprites.holdPackage, 390, 344 + breathe, 118, 146);
+  drawImage(externalAssets.objects.package, 482, 394 + breathe, 78, 78);
+  ctx.fillStyle = "#ffd36b";
+  ctx.fillRect(524, 414 + breathe, 5, 5);
+  ctx.fillRect(534, 424 + breathe, 4, 4);
+  if (lookDown) drawPixelText("?", 460, 346 + breathe, 22, "#ffd36b");
+  if (blink) {
+    ctx.fillStyle = "#ffd36b";
+    ctx.globalAlpha = 0.35;
+    ctx.fillRect(412, 400 + breathe, 70, 6);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawMenuWeather(t) {
+  ctx.save();
+  ctx.strokeStyle = "#a86cf1";
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.28;
+  for (const drop of rain) {
+    const x = (drop.x + Math.sin(t * 0.6) * 8) % W;
+    ctx.beginPath();
+    ctx.moveTo(x, drop.y);
+    ctx.lineTo(x - 7, drop.y + 18);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < 36; i++) {
+    const x = (i * 83 + t * (12 + i % 4)) % W;
+    const y = 118 + ((i * 47) % 330) + Math.sin(t + i) * 8;
+    ctx.fillStyle = i % 4 ? "#f29ad7" : "#ffd36b";
+    ctx.globalAlpha = 0.25 + Math.sin(t * 2 + i) * 0.15;
+    ctx.fillRect(x, y, 3, 3);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawMenuMysteryEvents(t) {
+  if (t > 5.5 && t < 7.5) {
+    ctx.fillStyle = "#120815";
+    const x = 772 + (t - 5.5) * 32;
+    ctx.fillRect(x, 316, 24, 58);
+  }
+  if (t > 10.5 && t < 13.5) {
+    drawPixelText("...", 690, 280 + Math.sin(t * 4) * 2, 22, "#ffd36b");
+  }
+  if (t > 15 && t < 17.5) {
+    ctx.fillStyle = "#ffd36b";
+    ctx.globalAlpha = 0.75 + Math.sin(t * 12) * 0.15;
+    ctx.fillRect(686, 311, 8, 8);
+    ctx.fillRect(709, 311, 8, 8);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function triangle(x1, y1, x2, y2, x3, y3) {
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x3, y3);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function linePath(points) {
+  ctx.beginPath();
+  ctx.moveTo(points[0][0], points[0][1]);
+  for (const [x, y] of points.slice(1)) ctx.lineTo(x, y);
+  ctx.stroke();
+}
+
+function drawRoom() {
+  const r = room();
+  drawImage(r.bg, 0, 0, W, H, false, "cover");
+  ctx.fillStyle = r.tint || "rgba(20, 8, 28, 0.12)";
+  ctx.fillRect(0, 0, W, H);
+  drawRoomDecor(r.id);
+}
+
+function drawRoomDecor(id) {
+  if (flags.paintingChanged && id === "hallway") {
+    drawPixelText("?", 560, 208, 36, "#ffd36b");
+  }
+}
+
+function drawObjects() {
+  const objects = [...room().objects].sort((a, b) => (a.y + a.h) - (b.y + b.h));
+  for (const obj of objects) {
+    if (obj.hidden?.()) continue;
+    if (obj.sprite) {
+      drawImage(obj.sprite, obj.x, obj.y, obj.w, obj.h);
+    } else {
+      drawPropBox(obj);
+    }
+    if (nearestObject() === obj && !state.currentLine && !state.inventoryOpen) {
+      ctx.strokeStyle = "#ffd36b";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(obj.x - 4, obj.y - 4, obj.w + 8, obj.h + 8);
+    }
+  }
+}
+
+function drawPropBox(obj) {
+  drawPendingAsset(`objects/${obj.id}.png`, obj.x, obj.y, obj.w, obj.h);
+}
+
+function drawPlayer() {
+  const p = state.player;
+  const walking = keys.has("ArrowRight") || keys.has("KeyD") || keys.has("ArrowLeft") || keys.has("KeyA") || keys.has("ArrowDown") || keys.has("KeyS") || keys.has("ArrowUp") || keys.has("KeyW");
+  const frame = Math.floor(p.walk * 8) % 2;
+  let sprite = heroSprites.idle;
+  if (p.facing === "up") sprite = walking ? (frame ? heroSprites.walkUp1 : heroSprites.walkUp2) : heroSprites.idleUp;
+  else if (p.facing === "left" || p.facing === "right") sprite = walking ? (frame ? heroSprites.walkSide1 : heroSprites.walkSide2) : heroSprites.idleSide;
+  else sprite = walking ? (frame ? heroSprites.walkDown1 : heroSprites.walkDown2) : heroSprites.idle;
+  const flip = p.facing === "left";
+  drawImage(sprite, p.x - 32, p.y - 58, 108, 132, flip);
+}
+
+function drawChase() {
+  if (!state.chase?.active || state.room !== "cemetery") return;
+  const c = state.chase;
+  drawImage(externalAssets.objects.shadow, c.x - 48, c.y - 58, 96, 96);
+  drawPixelText("!", c.x - 7, c.y - 68, 24, "#ffd36b");
+}
+
+function drawAtmosphere() {
+  const t = performance.now() / 1000;
+  ctx.save();
+  ctx.globalAlpha = 0.2;
+  ctx.strokeStyle = "#a86cf1";
+  ctx.lineWidth = 2;
+  for (const drop of rain) {
+    ctx.beginPath();
+    ctx.moveTo(drop.x, drop.y);
+    ctx.lineTo(drop.x - 8, drop.y + 16);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < motes.length; i++) {
+    const m = motes[i];
+    const x = (m.x + t * (8 + (i % 5))) % W;
+    const y = m.y + Math.sin(t * 1.4 + m.phase) * 8;
+    ctx.fillStyle = i % 3 ? "#f29ad7" : "#ffd36b";
+    ctx.globalAlpha = 0.38 + Math.sin(t * 2 + m.phase) * 0.16;
+    ctx.fillRect(x, y, 3, 3);
+  }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < 3; i++) {
+    ctx.fillStyle = "rgba(255, 192, 220, 0.13)";
+    ctx.beginPath();
+    ctx.ellipse(((t * 18 + i * 330) % 1240) - 80, 430 + i * 18, 180, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, p.life * 1.8);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, 5, 5);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawMiniMap() {
+  drawPanel(850, 18, 154, 108);
+  const map = {
+    bedroom: [876, 74],
+    hallway: [914, 74],
+    library: [914, 40],
+    mirror: [952, 74],
+    garden: [952, 108],
+    cemetery: [990, 108],
+    party: [990, 74],
+  };
+  Object.entries(map).forEach(([id, [x, y]]) => {
+    ctx.fillStyle = id === state.room ? "#ffd36b" : "#3d2063";
+    ctx.fillRect(x, y, 24, 18);
+    ctx.strokeStyle = "#f29ad7";
+    ctx.strokeRect(x, y, 24, 18);
+  });
+  ctx.fillStyle = "#ffc0dc";
+  ctx.fillText("MAPA", 894, 48);
+}
+
+function drawSaveNotice() {
+  if (state.saveFlash <= 0 || state.currentLine || state.inventoryOpen) return;
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, state.saveFlash);
+  drawPanel(38, 20, 190, 46);
+  drawPixelText("Guardado", 66, 52, 18, "#ffd36b");
+  ctx.restore();
+}
+
+function drawInteractionPrompt() {
+  if (state.currentLine || state.inventoryOpen || state.ending) return;
+  const obj = nearestObject();
+  if (!obj) return;
+  drawPanel(312, 18, 400, 50);
+  drawPixelText(`E  ${obj.label}`, 334, 52, 19, "#fff2c7");
+}
+
+function drawInventory() {
+  if (!state.inventoryOpen) return;
+  const items = [...state.inventory];
+  drawImage(externalAssets.ui.inventoryPanel, 172, 90, 680, 370, false, "stretch");
+  drawPixelText("Inventario", 208, 132, 28, "#ffd36b");
+  drawPixelText("Tab cambia objeto - E examina - I cierra", 208, 426, 18, "#f7bfd2");
+  if (!items.length) {
+    drawPixelText("Aun no tienes objetos.", 208, 210, 24, "#fff2c7");
+    return;
+  }
+  items.forEach((id, i) => {
+    const x = 220 + (i % 4) * 140;
+    const y = 166 + Math.floor(i / 4) * 118;
+    drawImage(externalAssets.ui.inventorySlot, x, y, 88, 88);
+    if (i === state.selectedInventory % items.length) drawImage(externalAssets.ui.selector, x - 7, y - 7, 102, 102);
+    drawImage(inventoryDefs[id].icon, x + 14, y + 14, 60, 60);
+    drawPixelText(inventoryDefs[id].name, x - 10, y + 112, 15, "#fff2c7");
+  });
+}
+
+function drawDialogue() {
+  if (!state.currentLine) return;
+  drawImage(externalAssets.ui.dialogBox, 48, 386, 928, 164);
+  drawPanel(70, 404, 142, 126);
+  const portrait = state.currentLine.text.includes("?") ? heroSprites.portraitSurprise : heroSprites.portrait;
+  drawImage(portrait, 78, 394, 126, 126);
+  drawPixelText(`${state.currentLine.speaker}:`, 236, 430, 22, "#ffd36b");
+  wrapText(state.currentLine.text, 690, 22).forEach((text, i) => {
+    drawPixelText(text, 236, 468 + i * 28, 22, "#fff6ff");
+  });
+  drawPixelText("E", 936, 526, 18, "#ffd36b");
+}
+
+function drawPause() {
+  if (!state.paused) return;
+  ctx.fillStyle = "rgba(8, 5, 14, 0.72)";
+  ctx.fillRect(0, 0, W, H);
+  drawPanel(348, 184, 328, 160);
+  drawPixelText("PAUSA", 438, 244, 36, "#ffd36b");
+  drawPixelText("Esc para continuar", 390, 292, 20, "#fff6ff");
+}
+
+function drawEndingSparkles() {
+  if (!state.ending) return;
+  const t = performance.now() / 1000;
+  for (let i = 0; i < 18; i++) {
+    star(110 + i * 48, 112 + Math.sin(t * 2 + i) * 44, i % 2 ? "#f29ad7" : "#ffd36b", 5);
+  }
+  drawImage(heroSprites.celebrate, 430, 254 + Math.sin(t * 6) * 7, 156, 190);
+}
+
+function drawImage(path, x, y, w, h, flip = false, fit = "contain") {
+  const img = images.get(path);
+  if (!img || !img.complete || img.naturalWidth === 0 || missingAssets.has(path)) {
+    drawPendingAsset(path, x, y, w, h);
+    return false;
+  }
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  let dx = x;
+  let dy = y;
+  let dw = w;
+  let dh = h;
+  if (fit !== "stretch" && img.naturalWidth && img.naturalHeight) {
+    const scale = fit === "cover"
+      ? Math.max(w / img.naturalWidth, h / img.naturalHeight)
+      : Math.min(w / img.naturalWidth, h / img.naturalHeight);
+    dw = Math.max(1, Math.round(img.naturalWidth * scale));
+    dh = Math.max(1, Math.round(img.naturalHeight * scale));
+    dx = Math.round(x + (w - dw) / 2);
+    dy = Math.round(y + (h - dh) / 2);
+    if (fit === "cover") {
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+    }
+  }
+  if (flip) {
+    ctx.translate(dx + dw, dy);
+    ctx.scale(-1, 1);
+    ctx.drawImage(img, 0, 0, dw, dh);
+  } else {
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+  ctx.restore();
+  return true;
+}
+
+function drawPanel(x, y, w, h) {
+  drawImage(externalAssets.ui.panel, x, y, w, h, false, "stretch");
+}
+
+function drawPendingAsset(path, x, y, w, h) {
+  const placeholder = images.get(PLACEHOLDER_ASSET);
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  if (placeholder?.complete && placeholder.naturalWidth > 0 && path !== PLACEHOLDER_ASSET) {
+    const scale = Math.min(w / placeholder.naturalWidth, h / placeholder.naturalHeight);
+    const dw = Math.max(1, Math.round(placeholder.naturalWidth * scale));
+    const dh = Math.max(1, Math.round(placeholder.naturalHeight * scale));
+    const dx = Math.round(x + (w - dw) / 2);
+    const dy = Math.round(y + (h - dh) / 2);
+    ctx.drawImage(placeholder, dx, dy, dw, dh);
+  } else {
+    ctx.fillStyle = "#14081c";
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = "#ffd36b";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, h - 2));
+  }
+  if (w >= 120 && h >= 72) {
+    ctx.font = "900 13px monospace";
+    ctx.fillStyle = "#fff1c7";
+    ctx.textAlign = "center";
+    ctx.fillText("PENDIENTE_ASSET", x + w / 2, y + h / 2 + 36);
+  }
+  ctx.restore();
+}
+
+function drawPixelText(text, x, y, size, color) {
+  ctx.save();
+  ctx.font = `900 ${size}px "Trebuchet MS", sans-serif`;
+  ctx.fillStyle = "#120815";
+  ctx.fillText(text, x + 3, y + 3);
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
   ctx.restore();
 }
 
 function wrapText(text, maxWidth, size) {
   ctx.save();
-  ctx.font = `800 ${size}px "Trebuchet MS", sans-serif`;
+  ctx.font = `900 ${size}px "Trebuchet MS", sans-serif`;
   const words = text.split(" ");
   const lines = [];
   let line = "";
-  words.forEach((word) => {
+  for (const word of words) {
     const test = line ? `${line} ${word}` : word;
     if (ctx.measureText(test).width > maxWidth && line) {
       lines.push(line);
@@ -584,324 +1579,119 @@ function wrapText(text, maxWidth, size) {
     } else {
       line = test;
     }
-  });
+  }
   if (line) lines.push(line);
   ctx.restore();
   return lines;
 }
 
-function drawParallaxAndAtmosphere() {
-  const t = performance.now() / 1000;
-  ctx.save();
-  ctx.globalAlpha = 0.22;
-  const fog = ctx.createLinearGradient(0, 360, 0, 545);
-  fog.addColorStop(0, "rgba(255, 190, 245, 0)");
-  fog.addColorStop(1, "rgba(244, 178, 255, 0.42)");
-  ctx.fillStyle = fog;
-  for (let i = 0; i < 4; i++) {
-    ctx.beginPath();
-    ctx.ellipse(((t * 18 + i * 310) % 1320) - 120, 430 + i * 18, 210, 34, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-
-  magicDust.forEach((p, i) => {
-    const x = (p.x + t * p.speed) % W;
-    const y = p.y + Math.sin(t * 1.6 + p.phase) * 8;
-    ctx.fillStyle = i % 3 === 0 ? "#ffd36b" : "#f7a6ff";
-    ctx.globalAlpha = 0.45 + Math.sin(t * 3 + p.phase) * 0.18;
-    ctx.fillRect(x, y, 3, 3);
-  });
-  ctx.globalAlpha = 1;
-
-  ctx.fillStyle = "rgba(20, 10, 32, 0.9)";
-  for (let i = 0; i < 6; i++) {
-    const x = ((t * (24 + i * 3) + i * 210) % 1200) - 80;
-    const y = 72 + Math.sin(t * 2 + i) * 20 + i * 15;
-    drawBat(x, y, 0.7 + (i % 3) * 0.15);
-  }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
-function drawBat(x, y, s) {
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.quadraticCurveTo(x + 12 * s, y - 12 * s, x + 24 * s, y);
-  ctx.quadraticCurveTo(x + 34 * s, y - 12 * s, x + 44 * s, y);
-  ctx.quadraticCurveTo(x + 30 * s, y + 8 * s, x + 22 * s, y + 2 * s);
-  ctx.quadraticCurveTo(x + 14 * s, y + 8 * s, x, y);
-  ctx.fill();
-}
-
-function drawPlatform(p) {
-  ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.38)";
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetY = 8;
-  if (p.kind === "tomb") drawTombPlatform(p);
-  if (p.kind === "book") drawBookPlatform(p);
-  if (p.kind === "branch") drawBranchPlatform(p);
-  if (p.kind === "pumpkin") drawGroundPlatform(p);
-  if (p.kind === "cloud") drawCloudPlatform(p);
-  ctx.restore();
-}
-
-function drawTombPlatform(p) {
-  ctx.fillStyle = "#4a365f";
-  ctx.beginPath();
-  ctx.roundRect(p.x, p.y + 8, p.w, p.h, 7);
-  ctx.fill();
-  ctx.fillStyle = "#75528b";
-  for (let x = p.x + 10; x < p.x + p.w - 12; x += 34) {
-    ctx.beginPath();
-    ctx.roundRect(x, p.y - 12, 24, p.h + 12, 9);
-    ctx.fill();
-  }
-  drawPlatformTop(p);
-}
-
-function drawBookPlatform(p) {
-  ctx.fillStyle = "#3b214d";
-  ctx.beginPath();
-  ctx.roundRect(p.x, p.y, p.w, p.h, 6);
-  ctx.fill();
-  ctx.fillStyle = "#9b5bc3";
-  ctx.fillRect(p.x + 8, p.y + 7, p.w - 16, 6);
-  ctx.fillStyle = "#ffd36b";
-  ctx.fillRect(p.x + 20, p.y + p.h - 8, p.w - 40, 4);
-  drawPlatformTop(p);
-}
-
-function drawBranchPlatform(p) {
-  ctx.strokeStyle = "#281323";
-  ctx.lineWidth = p.h;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(p.x + 12, p.y + p.h / 2);
-  ctx.quadraticCurveTo(p.x + p.w * 0.48, p.y - 8, p.x + p.w - 10, p.y + p.h / 2);
-  ctx.stroke();
-  ctx.strokeStyle = "#7b3b65";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-  ctx.fillStyle = "#d774bd";
-  ctx.fillRect(p.x + 15, p.y + 6, p.w - 30, 4);
-}
-
-function drawGroundPlatform(p) {
-  const fill = ctx.createLinearGradient(0, p.y, 0, p.y + p.h);
-  fill.addColorStop(0, "#d96ac5");
-  fill.addColorStop(0.18, "#5b316e");
-  fill.addColorStop(1, "#25152d");
-  ctx.fillStyle = fill;
-  ctx.beginPath();
-  ctx.roundRect(p.x, p.y, p.w, p.h, 6);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255, 222, 250, 0.55)";
-  ctx.fillRect(p.x, p.y + 4, p.w, 4);
-  for (let x = p.x + 20; x < p.w; x += 72) drawTinyPumpkin(x, p.y - 11);
-}
-
-function drawCloudPlatform(p) {
-  ctx.fillStyle = "#f2d8ff";
-  ctx.beginPath();
-  ctx.roundRect(p.x + 8, p.y + 10, p.w - 16, p.h - 8, 12);
-  ctx.fill();
-  ctx.fillStyle = "#9b62bc";
-  ctx.fillRect(p.x + 16, p.y + p.h - 8, p.w - 32, 5);
-  drawPlatformTop(p);
-}
-
-function drawPlatformTop(p) {
-  ctx.fillStyle = "#ffb8f4";
-  ctx.fillRect(p.x + 8, p.y + 4, p.w - 16, 4);
-  ctx.fillStyle = "rgba(24, 10, 30, 0.36)";
-  ctx.fillRect(p.x + 10, p.y + p.h - 7, p.w - 20, 4);
-}
-
-function drawTinyPumpkin(x, y) {
-  ctx.fillStyle = "#f08a32";
-  ctx.beginPath();
-  ctx.ellipse(x, y, 10, 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#30131f";
-  ctx.fillRect(x - 4, y - 1, 2, 2);
-  ctx.fillRect(x + 3, y - 1, 2, 2);
-}
-
-function drawCollectible(item, index) {
-  const catalog = itemCatalog[item.itemType];
-  const bob = Math.sin(performance.now() / 260 + index) * 7;
-  const x = item.x;
-  const y = item.y + bob;
-  ctx.save();
-  ctx.shadowColor = "#ffd36b";
-  ctx.shadowBlur = 18;
-  ctx.globalAlpha = 0.75;
-  ctx.beginPath();
-  ctx.arc(x, y, 27, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 215, 113, 0.22)";
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  drawImage(catalog.asset, x - 31, y - 31, 62, 62);
-  ctx.restore();
-}
-
-function drawEnemy(enemy) {
-  const bob = Math.sin(enemy.phase) * 6;
-  ctx.save();
-  ctx.fillStyle = "rgba(255, 92, 142, 0.18)";
-  ctx.beginPath();
-  ctx.arc(enemy.x + enemy.w / 2, enemy.y + enemy.h / 2 + bob, 38, 0, Math.PI * 2);
-  ctx.fill();
-  drawImage(asset("Enemies/ghost.png"), enemy.x - 6, enemy.y + bob - 8, enemy.w + 12, enemy.h + 12, enemy.vx < 0);
-  ctx.fillStyle = "#ff5c8e";
-  ctx.fillRect(enemy.minX, enemy.y + enemy.h + 8, enemy.maxX - enemy.minX + enemy.w, 3);
-  ctx.restore();
-}
-
-function drawGate() {
-  const ready = collected.size === levels[levelIndex].items.length;
-  ctx.save();
-  ctx.shadowColor = ready ? "#ffd36b" : "rgba(0, 0, 0, 0.35)";
-  ctx.shadowBlur = ready ? 20 : 8;
-  ctx.fillStyle = ready ? "#ffd36b" : "#796883";
-  ctx.fillRect(966, 434, 42, 78);
-  ctx.fillStyle = "#24172b";
-  ctx.fillRect(978, 450, 18, 62);
-  ctx.restore();
-}
-
-function drawMara() {
-  let sprite = hd("Character/idle.png");
-  if (!player.grounded) sprite = player.vy < 0 ? hd("Character/jump.png") : hd("Character/fall.png");
-  else if (Math.abs(player.vx) > 1) sprite = Math.floor(player.walkTime * 8) % 2 ? hd("Character/run_1.png") : hd("Character/run_2.png");
-
-  const img = images.get(sprite);
-  const celebrating = celebrateTimer > 0;
-  const targetH = celebrating ? 178 : Math.abs(player.vx) > 1 ? 176 : 160;
-  const targetW = img?.naturalHeight ? targetH * (img.naturalWidth / img.naturalHeight) : 118;
-  const drawX = player.x + player.w / 2 - targetW / 2;
-  const drawY = player.y + player.h - targetH + 12 - (celebrating ? Math.sin(celebrateTimer * 22) * 8 : 0);
-  ctx.save();
-  ctx.globalAlpha = player.invulnerable > 0 && Math.floor(performance.now() / 90) % 2 === 0 ? 0.55 : 1;
-  ctx.shadowColor = "rgba(0, 0, 0, 0.48)";
-  ctx.shadowBlur = 14;
-  ctx.shadowOffsetY = 6;
-  drawImage(sprite, drawX, drawY, targetW, targetH, player.facing < 0);
-  if (celebrating) {
-    drawPixelText("★", player.x + 54, player.y - 38, 26, "#ffd36b");
-    drawPixelText("★", player.x - 18, player.y - 20, 18, "#f7a6ff");
-  }
-  ctx.restore();
-}
-
-function drawStoryBubble() {
-  if (storyMessageTimer <= 0 || !storyMessage) return;
-  const alpha = Math.min(1, storyMessageTimer);
-  const x = Math.max(18, Math.min(W - 560, player.x - 110));
-  const y = Math.max(56, player.y - 94);
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = "rgba(28, 10, 38, 0.93)";
-  ctx.strokeStyle = "#ffd36b";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.roundRect(x, y, 520, 48, 10);
-  ctx.fill();
-  ctx.stroke();
-  drawPixelText(storyMessage, x + 14, y + 31, 17, "#fff0fb");
-  ctx.restore();
-}
-
-function drawParticles() {
-  particles.forEach((p) => {
-    ctx.globalAlpha = Math.max(0, p.life * 1.6);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(p.x, p.y, 5, 5);
-  });
-  ctx.globalAlpha = 1;
-}
-
-function drawCanvasHud() {
-  drawPixelText(`Disfraz: ${collected.size}/${levels[levelIndex].items.length}`, 22, 28, 20, "#fff2b8");
-}
-
-function drawPixelText(text, x, y, size, color) {
-  ctx.save();
-  ctx.font = `800 ${size}px "Trebuchet MS", sans-serif`;
-  ctx.fillStyle = "#4a1d5d";
-  ctx.fillText(text, x + 3, y + 3);
+function star(x, y, color, size = 4) {
   ctx.fillStyle = color;
-  ctx.fillText(text, x, y);
-  ctx.restore();
+  ctx.fillRect(x - 1, y - size, 3, size * 2);
+  ctx.fillRect(x - size, y - 1, size * 2, 3);
+  ctx.fillStyle = "#fff2c7";
+  ctx.fillRect(x, y, 2, 2);
 }
 
 function loop(now) {
   const dt = Math.min(0.033, (now - lastTime) / 1000);
   lastTime = now;
-  step(dt);
+  update(dt);
   render();
   requestAnimationFrame(loop);
 }
 
-function jump() {
-  if (player.grounded && !paused && started) {
-    player.vy = -780;
-    player.grounded = false;
-  }
+function startGame() {
+  clearSave();
+  state.started = true;
+  document.body.classList.remove("menu-mode");
+  state.paused = false;
+  state.ending = false;
+  state.room = "bedroom";
+  state.player.x = room().spawn.x;
+  state.player.y = room().spawn.y;
+  state.inventory.clear();
+  state.selectedInventory = 0;
+  Object.keys(flags).forEach((key) => delete flags[key]);
+  state.chase = null;
+  state.lives = 3;
+  state.elapsed = 0;
+  state.saveFlash = 0;
+  overlay.hidden = true;
+  queueDialogue([
+    lineOf("Charlotte", "Es Halloween... y mi paquete Moon Parcel acaba de llegar."),
+    lineOf("Charlotte", "La caja esta brillando. Eso no venia en la descripcion."),
+  ]);
+  updateHud();
+  saveGame({ flash: false });
 }
 
 window.addEventListener("keydown", (event) => {
   keys.add(event.code);
-  if (["Space", "KeyW", "ArrowUp"].includes(event.code)) {
+  if (event.code === "KeyE" || event.code === "Enter") {
     event.preventDefault();
-    jump();
+    interact();
   }
-  if (event.code === "Escape" && started && !won) paused = !paused;
+  if (event.code === "KeyI") {
+    event.preventDefault();
+    if (!state.currentLine) state.inventoryOpen = !state.inventoryOpen;
+  }
+  if (event.code === "Tab") {
+    event.preventDefault();
+    const size = Math.max(1, state.inventory.size);
+    state.selectedInventory = (state.selectedInventory + 1) % size;
+  }
+  if (event.code === "Escape" && state.started && !state.currentLine) {
+    state.paused = !state.paused;
+    state.inventoryOpen = false;
+  }
 });
 
 window.addEventListener("keyup", (event) => keys.delete(event.code));
 
-startBtn.addEventListener("click", () => {
-  if (gameMode === "ending") {
-    if (levelIndex < levels.length - 1) levelIndex += 1;
-    else levelIndex = 0;
-    overlay.hidden = true;
-    beginGameplay();
-    return;
-  }
-  overlay.querySelector("h1").textContent = "Midnight Costume Quest";
-  overlay.querySelector("p").textContent = "Acompaña a una chica kawaii en su aventura para completar su disfraz de Halloween.";
-  startBtn.textContent = "Jugar";
-  creditsBtn.hidden = false;
-  startIntro();
+startBtn.addEventListener("click", startGame);
+
+continueBtn.addEventListener("click", () => {
+  loadGame();
+});
+
+optionsBtn.addEventListener("click", () => {
+  setMenuCopy("Opciones", "Ambiente", "Lluvia, niebla, luces parpadeantes, particulas magicas y guardado automatico activados.");
 });
 
 creditsBtn.addEventListener("click", () => {
-  overlay.querySelector("h1").textContent = "Creditos";
-  overlay.querySelector("p").textContent = "Rediseño visual inspirado en Halloween kawaii pixel art. Base jugable: minijuego Unity original.";
+  setMenuCopy("Creditos", "Halloween Delivery", "Aventura narrativa pixel art creada para explorar una casa viva, resolver pistas y completar el disfraz de Charlotte.");
 });
 
-document.querySelector("#restart").addEventListener("click", () => resetLevel(false));
-document.querySelector("#prevLevel").addEventListener("click", () => {
-  levelIndex = (levelIndex + levels.length - 1) % levels.length;
-  started = true;
-  gameMode = "play";
-  overlay.hidden = true;
-  resetLevel(false);
+exitBtn.addEventListener("click", () => {
+  setMenuCopy("Moon Parcel", "Halloween Delivery", "La casa magica queda esperando otra entrega.");
 });
+
+document.querySelector("#restart").addEventListener("click", () => {
+  const r = room();
+  state.player.x = r.spawn.x;
+  state.player.y = r.spawn.y;
+  state.currentLine = null;
+  state.dialogue = [];
+  state.inventoryOpen = false;
+});
+
+document.querySelector("#prevLevel").addEventListener("click", () => {
+  const i = rooms.findIndex((r) => r.id === state.room);
+  const next = rooms[(i + rooms.length - 1) % rooms.length];
+  changeRoom(next.id, next.spawn.x, next.spawn.y);
+});
+
 document.querySelector("#nextLevel").addEventListener("click", () => {
-  levelIndex = (levelIndex + 1) % levels.length;
-  started = true;
-  gameMode = "play";
-  overlay.hidden = true;
-  resetLevel(false);
+  const i = rooms.findIndex((r) => r.id === state.room);
+  const next = rooms[(i + 1) % rooms.length];
+  changeRoom(next.id, next.spawn.x, next.spawn.y);
 });
 
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 loadImages().then(() => {
-  resetLevel(false);
+  updateHud();
+  refreshContinueButton();
   requestAnimationFrame(loop);
 });

@@ -1,0 +1,82 @@
+{
+  "status": "external_png_pipeline_ready",
+  "rule": "Replace any listed PNG with real pixel art. Missing files render as PENDIENTE_ASSET.",
+  "scale": "Pixel art: nearest/point filtering, no smoothing, no blur. Provide transparent PNGs for sprites and objects.",
+  "rooms": {
+    "menu_main.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "main menu background" },
+    "bedroom_initial.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "initial bedroom full background" },
+    "hallway_strange.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "hallway room full background" },
+    "library_enchanted.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "library room full background" },
+    "mirror_room.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "mirror room full background" },
+    "garden_night.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "night garden full background" },
+    "cemetery.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "cemetery full background" },
+    "halloween_salon.png": { "folder": "assets/rooms", "recommended_size": "1024x576", "usage": "ending salon full background" }
+  },
+  "characters": {
+    "charlotte_idle_down.png": "assets/characters",
+    "charlotte_idle_up.png": "assets/characters",
+    "charlotte_idle_side.png": "assets/characters",
+    "charlotte_walk_down_1.png": "assets/characters",
+    "charlotte_walk_down_2.png": "assets/characters",
+    "charlotte_walk_up_1.png": "assets/characters",
+    "charlotte_walk_up_2.png": "assets/characters",
+    "charlotte_walk_side_1.png": "assets/characters",
+    "charlotte_walk_side_2.png": "assets/characters",
+    "charlotte_interact.png": "assets/characters",
+    "charlotte_surprise.png": "assets/characters",
+    "charlotte_hold_package.png": "assets/characters",
+    "charlotte_celebrate.png": "assets/characters"
+  },
+  "portraits": {
+    "charlotte_neutral.png": "assets/portraits",
+    "charlotte_surprise.png": "assets/portraits"
+  },
+  "objects": {
+    "bed.png": "assets/objects",
+    "bookshelf.png": "assets/objects",
+    "open_spellbook.png": "assets/objects",
+    "cemetery_gate.png": "assets/objects",
+    "chair.png": "assets/objects",
+    "clothes_hanging.png": "assets/objects",
+    "desk.png": "assets/objects",
+    "doll.png": "assets/objects",
+    "door.png": "assets/objects",
+    "final_table.png": "assets/objects",
+    "ghost.png": "assets/objects",
+    "haunted_painting.png": "assets/objects",
+    "lamp.png": "assets/objects",
+    "makeup.png": "assets/objects",
+    "mirror_full.png": "assets/objects",
+    "moon_flowers.png": "assets/objects",
+    "package_glow.png": "assets/objects",
+    "photo_cluster.png": "assets/objects",
+    "plant.png": "assets/objects",
+    "poster_set.png": "assets/objects",
+    "plushes.png": "assets/objects",
+    "round_rug.png": "assets/objects",
+    "wall_shelves.png": "assets/objects",
+    "shadow.png": "assets/objects",
+    "window_rain.png": "assets/objects"
+  },
+  "ui": {
+    "PENDIENTE_ASSET.png": "assets/ui",
+    "dialog_box.png": "assets/ui",
+    "heart_empty.png": "assets/ui",
+    "heart_full.png": "assets/ui",
+    "inventory_panel.png": "assets/ui",
+    "inventory_slot.png": "assets/ui",
+    "panel.png": "assets/ui",
+    "selector.png": "assets/ui",
+    "icon_accessory.png": "assets/ui",
+    "icon_boots.png": "assets/ui",
+    "icon_cape.png": "assets/ui",
+    "icon_hat.png": "assets/ui",
+    "icon_invitation.png": "assets/ui",
+    "icon_key.png": "assets/ui",
+    "icon_package.png": "assets/ui",
+    "icon_wand.png": "assets/ui"
+  },
+  "tilesets": {
+    "interior_room_tileset.png": { "folder": "assets/tilesets", "usage": "source sheet/reference for room assembly; not required for runtime if full room PNG is supplied" }
+  }
+}

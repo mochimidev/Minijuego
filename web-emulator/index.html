@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Midnight Costume Quest - Web Emulator</title>
+    <title>Halloween Delivery - Web Emulator</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -11,7 +11,7 @@
     <main class="shell">
       <section class="hud" aria-label="Estado del juego">
         <div>
-          <span class="label">Nivel</span>
+          <span class="label">Ubicacion</span>
           <strong id="levelName">Menu</strong>
         </div>
         <div>
@@ -20,7 +20,7 @@
         </div>
         <div>
           <span class="label">Vidas</span>
-          <strong id="lives">♥♥♥</strong>
+          <strong id="lives">3</strong>
         </div>
         <div>
           <span class="label">Tiempo</span>
@@ -28,28 +28,32 @@
         </div>
       </section>
 
-      <section class="inventory" aria-label="Items del disfraz">
-        <span class="objective">Recolecta todos los items para completar tu disfraz de Halloween.</span>
+      <section class="inventory" aria-label="Inventario">
+        <span id="objective" class="objective">Explora la casa viva, examina objetos con E y descubre por que Moon Parcel te eligio.</span>
         <div id="itemIcons" class="item-icons"></div>
       </section>
 
       <div class="stage-wrap">
-        <canvas id="game" width="1024" height="576" aria-label="Minijuego emulado"></canvas>
+        <canvas id="game" width="1024" height="576" aria-label="Halloween Delivery"></canvas>
         <div id="overlay" class="overlay">
-          <h1>Midnight Costume Quest</h1>
-          <p>Acompaña a una chica kawaii en su aventura para completar su disfraz de Halloween.</p>
+          <span class="moon-badge">Moon Parcel</span>
+          <h1>Halloween Delivery</h1>
+          <p>La noche en que llego el paquete.</p>
           <div class="menu-actions">
             <button id="startBtn" type="button">Jugar</button>
+            <button id="continueBtn" type="button">Continuar</button>
+            <button id="optionsBtn" type="button">Opciones</button>
             <button id="creditsBtn" type="button">Creditos</button>
+            <button id="exitBtn" type="button">Salir</button>
           </div>
         </div>
       </div>
 
       <section class="controls" aria-label="Controles">
-        <button id="prevLevel" type="button" title="Nivel anterior">◀</button>
-        <button id="restart" type="button" title="Reiniciar nivel">↻</button>
-        <button id="nextLevel" type="button" title="Nivel siguiente">▶</button>
-        <span>Flechas o A/D para moverte, Espacio/W para saltar, Abajo/S para caer rapido, Esc para pausar.</span>
+        <button id="prevLevel" type="button" title="Habitacion anterior">◀</button>
+        <button id="restart" type="button" title="Reiniciar escena">↻</button>
+        <button id="nextLevel" type="button" title="Habitacion siguiente">▶</button>
+        <span>Flechas o WASD para caminar, E para interactuar/avanzar dialogos, I inventario, Tab cambiar objeto, Esc pausar.</span>
       </section>
     </main>
 
